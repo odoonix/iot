@@ -5,7 +5,8 @@ connect office devices into the ERP system
 <br />
 تاپیک attendence : 
 این تاپیک برای ثبت حضور و غیاب ها است. داده های حضور و غیاب از دستگاه zk را در odoo ثبت میکند
-ساختار داده ای که از zk به تاپیک attedence وارد میشود. <br />
+ساختار داده ای که از zk به تاپیک attedence وارد میشود. 
+<br /><br />
 
 
 thing_id = int (zk id)
