@@ -35,7 +35,7 @@ TODO: جدول تغییرات اضافه شود.
 
 ```json
 {
-  "thing_id": "",
+  "things_id": "",
   "attendence":[{
     "employee_id": 1,
     "timestamp": "2022-10-15 08:45:15",
@@ -109,7 +109,24 @@ devices [{
       "description": "The unique identifier for a things who send the message",
       "type": "string",
       "max_length": 128
-    }
+    },
+    "employee_id" : {
+      "description": "The unique identifier for a employee",
+      "type": "string",
+      "max_length": 10
+    },
+    "timestamp" : {
+      "description": "The date recorded in the device",
+      "type": "datetime",
+      "max_length": 
+    },
+    
+    "punch" : {
+      "description": "Indicates entry or exit. It accepts two values in or out ",
+      "type": "string",
+      "max_length": 3
+    },
+    
   },
   "required": [ "things_id" ]
 }
