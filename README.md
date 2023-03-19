@@ -22,22 +22,23 @@ attendence[{
 تاپیک employee: این تاپیک برای ثبت نام کاربران است.  <br />
 ساختار داده هایی که از دستگاه zk وارد تاپیک employee و از تاپیک employee وارد odoo میشود. <br />
 
-
-things_id = int <br />
-employee{[ <br />
-  employee_id = int <br />
-  employee_name = str <br />
-  password = (number or finger print) <br />
-]} <br />
+<pre>
+things_id = int 
+employee{[ 
+  employee_id = int 
+  employee_name = str 
+  password = (number or finger print) 
+]} 
+</pre>
 
 ساختار داده هایی که از odoo وارد تاپیک employee و از تاپیک employee وارد zk میشود. <br /> مشابه ساختار بالا است <br /> 
 
 تاپیک maintenance: اگر دستگاه جدیدی وارد سیستم شود یا دستگاهی خراب شود از این تاپیک استفاده میشود <br />
 مثلا اگر دستگاه جدیدی وصل شود<br /> 
-<p align="left">
-things_id = int <br />
-devices [{<br />
+<pre>
+things_id = int 
+devices [{
 }]
-  </p>
+</pre>
 
 اگر این اتفاق بیفته . odoo باید لیست کاربران را در تاپیک employee قرار بده و دستگاه zk جدید لیست کاربران را بخواند. 
