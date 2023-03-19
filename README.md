@@ -5,7 +5,9 @@ connect office devices into the ERP system
 <br />
 تاپیک attendence : 
 این تاپیک برای ثبت حضور و غیاب ها است. داده های حضور و غیاب از دستگاه zk را در odoo ثبت میکند
-ساختار داده ای که از zk به تاپیک attedence وارد میشود. 
+ساختار داده ای که از zk به تاپیک attedence وارد میشود. <br />
+
+
 thing_id = int (zk id)
 attendence[{
   employee_id = int
@@ -13,7 +15,7 @@ attendence[{
   punch = int [1,4] 1:in 4:out
 }, ]
 
-داده هایی که از تاپیک attendence  در odoo ثبت میشود. این داده ها صرفا در یک جدول به جز جدول hr_attendence در odoo ثبت میشود.  ای داده های پس از چک شدن در جدول اصلی ذخیره میشود.
+داده هایی که از تاپیک attendence  در odoo ثبت میشود. این داده ها صرفا در یک جدول به جز جدول hr_attendence در odoo ثبت میشود.  ای داده های پس از چک شدن در جدول اصلی ذخیره میشود  <br />
 
 
 تاپیک employee: این تاپیک برای ثبت نام کاربران است. 
