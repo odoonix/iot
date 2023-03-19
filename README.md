@@ -34,13 +34,20 @@ TODO: جدول تغییرات اضافه شود.
 نکته: این ساختار داده‌ای به فرمت JSON و با استاندارد UTF8  کدگذاری و در بدنه پیام ارسال می‌شود.
 
 ```json
-thing_id = int (zk id)
-attendence[{  
-  employee_id = int  
-  timestamp = datetime  
-  punch = int [1,4] 1:in 4:out  
-}, ]  
+{
+  "thing_id": "",
+  "attendence":[{
+    "employee_id": 1,
+    "timestamp": "2022-10-15 08:45:15",
+    "punch": "in"
+  }]
+}
 ```
+
+نمونه بالا یک بسته ارسالی از سمت دستگاه‌های ورود خروج به تاپیک مورد نظر را نشان می‌دهد. در بخش ساختار داده‌ها به صورت دقیق نوع داده‌ها مشخص شده است.
+
+به این نوع داده، داده ورود و خروج یا attendence می‌گوییم.
+
 
 <p align ='right'>
 داده هایی که از تاپیک attendence  در odoo ثبت میشود. این داده ها صرفا در یک جدول به جز جدول hr_attendence در odoo ثبت میشود.  این داده ها پس از چک شدن در جدول اصلی ذخیره میشوند  <br />
@@ -80,3 +87,30 @@ devices [{
 <p align ='right'>
 اگر این اتفاق بیفته . odoo باید لیست کاربران را در تاپیک employee قرار بده و دستگاه zk جدید لیست کاربران را بخواند.
 </p>
+
+
+#  ساختار داده‌ها
+
+تمام ساختارهای داده ارسالی و دریافتی به فرمت JSON بوده و با استاندارد UTF-8  کد گذاری می‌شود.
+
+## ساختار داده Attendence
+
+این ساختار داده برای ارسال عملیات‌های ورود خروج ثبت شده در دستگاه‌ها استفاده می‌شود.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://viraweb123.ir/iot.attendence.schema.json",
+  "title": "Attendence",
+  "description": "An employee attendence",
+  "type": "object",
+  "properties": {
+    "things_id": {
+      "description": "The unique identifier for a things who send the message",
+      "type": "string",
+      "max_length": 128
+    }
+  },
+  "required": [ "things_id" ]
+}
+```
