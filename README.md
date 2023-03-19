@@ -9,12 +9,12 @@ connect office devices into the ERP system
 <br /><br />
 
 
-thing_id = int (zk id)
-attendence[{
-  employee_id = int
-  timestamp = datetime
-  punch = int [1,4] 1:in 4:out
-}, ]
+thing_id = int (zk id) <br />
+attendence[{  <br />
+  employee_id = int  <br />
+  timestamp = datetime  <br />
+  punch = int [1,4] 1:in 4:out  <br />
+}, ]  <br />
 
 داده هایی که از تاپیک attendence  در odoo ثبت میشود. این داده ها صرفا در یک جدول به جز جدول hr_attendence در odoo ثبت میشود.  ای داده های پس از چک شدن در جدول اصلی ذخیره میشود  <br />
 
