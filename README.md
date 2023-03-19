@@ -21,7 +21,7 @@ attendence[{
 }, ]  
 </pre>
 <p align ='right'>
-داده هایی که از تاپیک attendence  در odoo ثبت میشود. این داده ها صرفا در یک جدول به جز جدول hr_attendence در odoo ثبت میشود.  ای داده های پس از چک شدن در جدول اصلی ذخیره میشود  <br />
+داده هایی که از تاپیک attendence  در odoo ثبت میشود. این داده ها صرفا در یک جدول به جز جدول hr_attendence در odoo ثبت میشود.  این داده ها پس از چک شدن در جدول اصلی ذخیره میشوند  <br />
 
 
 تاپیک employee: این تاپیک برای ثبت نام کاربران است.  <br />
@@ -51,6 +51,7 @@ employee{[
 <pre>
 things_id = int 
 devices [{
+  problem = 'syc'
 }]
 </pre>
 
