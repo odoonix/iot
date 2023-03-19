@@ -30,21 +30,15 @@ employee{[ <br />
   password = (number or finger print) <br />
 ]} <br />
 
-ساختار داده هایی که از odoo وارد تاپیک employee و از تاپیک employee وارد zk میشود. <br />
-things_id = int
-employee{[ 
-  employee_id = int 
-  employee_name = str  
-  password = (number or finger print) 
-]}
+ساختار داده هایی که از odoo وارد تاپیک employee و از تاپیک employee وارد zk میشود. <br /> مشابه ساختار بالا است <br /> 
 
 
 
 تاپیک maintenance: اگر دستگاه جدیدی وارد سیستم شود یا دستگاهی خراب شود از این تاپیک استفاده میشود <br />
 مثلا اگر دستگاه جدیدی وصل شود
-things_id = int
-devices[{
-  problem : syc
-}]
+things_id = int <br />
+devices[{ <br />
+  problem : 'syc'  <br />
+}]<br />
 
 اگر این اتفاق بیفته . odoo باید لیست کاربران را در تاپیک employee قرار بده و دستگاه zk جدید لیست کاربران را بخواند. 
