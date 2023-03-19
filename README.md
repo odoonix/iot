@@ -19,16 +19,16 @@ attendence[{  <br />
 داده هایی که از تاپیک attendence  در odoo ثبت میشود. این داده ها صرفا در یک جدول به جز جدول hr_attendence در odoo ثبت میشود.  ای داده های پس از چک شدن در جدول اصلی ذخیره میشود  <br />
 
 
-تاپیک employee: این تاپیک برای ثبت نام کاربران است. 
-ساختار داده هایی که از دستگاه zk وارد تاپیک employee و از تاپیک employee وارد odoo میشود.
+تاپیک employee: این تاپیک برای ثبت نام کاربران است.  <br />
+ساختار داده هایی که از دستگاه zk وارد تاپیک employee و از تاپیک employee وارد odoo میشود. <br />
 
 
-things_id = int
-employee{[
-  employee_id = int
-  employee_name = str
-  password = (number or finger print)
-]}
+things_id = int <br />
+employee{[ <br />
+  employee_id = int <br />
+  employee_name = str <br />
+  password = (number or finger print) <br />
+]} <br />
 
 ساختار داده هایی که از odoo وارد تاپیک employee و از تاپیک employee وارد zk میشود.
 things_id = int
