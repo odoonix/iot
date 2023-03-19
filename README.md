@@ -49,44 +49,58 @@ TODO: جدول تغییرات اضافه شود.
 به این نوع داده، داده ورود و خروج یا attendence می‌گوییم.
 
 
-<p align ='right'>
-داده هایی که از تاپیک attendence  در odoo ثبت میشود. این داده ها صرفا در یک جدول به جز جدول hr_attendence در odoo ثبت میشود.  این داده ها پس از چک شدن در جدول اصلی ذخیره میشوند  <br />
 
-
-تاپیک employee: این تاپیک برای ثبت نام کاربران است.  <br />
-ساختار داده هایی که از دستگاه zk وارد تاپیک employee و از تاپیک employee وارد odoo میشود. <br />
-</p>
-
-
-<pre>
-things_id = int 
-employee{[ 
-  employee_id = int 
-  employee_name = str 
-  password = (number or finger print) 
-]} 
-</pre>
+داده هایی که از تاپیک attendence  در odoo ثبت میشود. 
+این داده ها صرفا در یک جدول به جز جدول hr_attendence در odoo ثبت میشوند.
+این داده ها پس از چک شدن در جدول اصلی ذخیره میشوند.
 
 
 
-<p align ='right'>
-ساختار داده هایی که از odoo وارد تاپیک employee و از تاپیک employee وارد zk میشود. <br /> مشابه ساختار بالا است <br /> 
+## employee
+این تاپیک برای ثبت نام کاربران است.  
+ساختار داده هایی که از دستگاه‌ها وارد تاپیک employee و از تاپیک employee وارد odoo میشود. 
 
-تاپیک maintenance: اگر دستگاه جدیدی وارد سیستم شود یا دستگاهی خراب شود از این تاپیک استفاده میشود <br />
-مثلا اگر دستگاه جدیدی وصل شود<br /> 
+
+
+```json
+{
+  "things_id": "",
+  "action" :[CRUD]
+  "employee":[{
+    "employee_id": 1,
+    "employee_name": "ali ahmadi",
+    "finger_print" : [{
+                        "size": 638,
+                        "uid": 2,
+                        "fid": 6,
+                        "valid": 1,
+                        "template":
+                        "mark":
+    }]
+  }]
+}
+```
+
+ساختار داده هایی که از odoo وارد تاپیک employee و از تاپیک employee وارد دستگاه‌ها میشود، مشابه ساختار بالا است.
+
+
+##  maintenance
+اگر دستگاه جدیدی وارد سیستم شود یا دستگاهی خراب شود از این تاپیک استفاده میشود
+مثلا اگر دستگاه جدیدی وصل شود 
   
-</p>
 
-<pre>
-things_id = int 
-devices [{
-  problem = 'syc'
-}]
-</pre>
+```json
+{
+  "things_id": "",
+  "devices" :[{
+    "serialnumber" : '2679811022038',
+    "problem" : "syc"
+  }]
+}
+```
 
-<p align ='right'>
-اگر این اتفاق بیفته . odoo باید لیست کاربران را در تاپیک employee قرار بده و دستگاه zk جدید لیست کاربران را بخواند.
-</p>
+اگر این اتفاق بیفته . odoo باید لیست کاربران را در تاپیک employee قرار بده و دستگاه جدید لیست کاربران را بخواند.
+
 
 
 #  ساختار داده‌ها
@@ -122,7 +136,7 @@ devices [{
     },
     
     "punch" : {
-      "description": "Indicates entry or exit. It accepts two values in or out ",
+      "description": "Indicates entry or exit. It accepts two values 'in' or 'out' ",
       "type": "string",
       "max_length": 3
     },
@@ -131,3 +145,94 @@ devices [{
   "required": [ "things_id" ]
 }
 ```
+
+## ساختار داده employee
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://viraweb123.ir/iot.attendence.schema.json",
+  "title": "employee",
+  "description": "An employee ",
+  "type": "object",
+  "properties": {
+    "things_id": {
+      "description": "The unique identifier for a things who send the message",
+      "type": "string",
+      "max_length": 128
+      },
+      
+    "employee_id" : {
+      "description": "The unique identifier for a employee",
+      "type": "string",
+      "max_length": 10
+      },
+      
+    "employee_name" : {
+      "description": "name of employee",
+      "type": "string",
+      "max_length": 100
+      },
+      
+    "password" : {
+      "description": "Employee password",
+      "type": "string",
+      "max_length": 1000
+      },
+      
+     "finger_prints" : {
+      "description": "Employee finger_prints",
+      "type": "array",
+      "items" : 
+          {
+            "description": "A list of employee fingerprints ",
+            
+            "type": "object",
+            "properties": {
+                  "size": {"description": "Fingerprint size", "type": "int"}
+                  "uid": {"description": "Employee uid", "type": "int"},
+                  "fid": {"description": "Which finger of the registered employee can take up to 10 values", "type": "int"},
+                  "valid": {"description": "validation fingerprint", "type": "int"},
+                  "template":{"description": "fingerprint", "type": "bytes" }
+                  "mark": {"description": "fingerprint", "type": "bytes" }
+              }
+          }
+    },
+    
+  },
+  "required": [ "things_id" ]
+}
+```
+
+## ساختار داده maintenance
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://viraweb123.ir/iot.attendence.schema.json",
+  "title": "maintenance",
+  "description": "Device problems",
+  "type": "object",
+  "properties": {
+    "things_id": {
+      "description": "The unique identifier for a things who send the message",
+      "type": "string",
+      "max_length": 128
+    },
+    
+    "serialnumber" : {
+      "description": "The unique identifier for a device",
+      "type": "string",
+      "max_length": 100
+    },
+    
+    "problem" : {
+      "description": "Determines the type of problem",
+      "type": "string",
+      "max_length": 200
+    },
+    
+  },
+  "required": [ "things_id" ]
+}
+```
+
+
