@@ -37,7 +37,6 @@ employee{[ <br />
 <p align="left">
 things_id = int <br />
 devices [{<br />
-
 }]
   </p>
 
