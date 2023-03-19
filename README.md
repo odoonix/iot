@@ -3,12 +3,13 @@ connect office devices into the ERP system
 
 ## سه تاپیک در broker داریم(attendence _ employees _ maintenance) 
 <br />
+<p align ='left'>
 تاپیک attendence : 
 <br />
 این تاپیک برای ثبت حضور و غیاب ها است. داده های حضور و غیاب از دستگاه zk را در odoo ثبت میکند
 ساختار داده ای که از zk به تاپیک attedence وارد میشود. 
-<br /><br />
-
+<br />
+</p>
 <pre>
 thing_id = int (zk id)
 attendence[{  
