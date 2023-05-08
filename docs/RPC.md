@@ -51,7 +51,7 @@ user_name : نام کاربر
 
 ```
 def add_user(self, user_id , user_name):
-        conn.set_user(uid= '' , name=user_name , privilege= '', password='', group_id='', user_id='1', card=0)
+        conn.set_user(uid= '' , name=user_name , privilege= '', password='', group_id='', user_id= user_id , card=0)
 ```
 
 
