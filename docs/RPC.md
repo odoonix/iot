@@ -47,7 +47,7 @@ user_name : نام کاربر
   }
 ```
 
-## نمونه ای از متد print_file
+## نمونه ای از متد add_user
 
 ```
 def add_user(self, user_id , user_name):
