@@ -17,10 +17,12 @@
 در خواست باید شامل نام متد add_user و پارامترهای موردنیاز باشه
 
 پارامترهای موردنیاز متد add_user : 
+uid : کاربر uid
 
 user_id : کاربر id
 
 user_name : نام کاربر
+
 
 ### نمونه ای از درخواست ارسالی
 
@@ -30,6 +32,7 @@ user_name : نام کاربر
   "method": "add_user",
 
   "params": {
+  "uid" : 1
    "user_id" : "1",
    "user_name" : "ali"
   }
@@ -42,7 +45,7 @@ user_name : نام کاربر
   'data': {
     'id': 1, 
     'method': 'add_user',
-    'params': {'user_id': '1', 'user_name': 'ali'}
+    'params': {"uid" : 1 ,'user_id': '1', 'user_name': 'ali'}
     }
   }
 ```
@@ -51,7 +54,7 @@ user_name : نام کاربر
 
 ```
 def add_user(self, user_id , user_name):
-        conn.set_user(uid= '' , name=user_name , privilege= '', password='', group_id='', user_id= user_id , card=0)
+        conn.set_user(uid= uid , name=user_name , privilege= '', password='', group_id='', user_id= user_id , card=0)
 ```
 
 
