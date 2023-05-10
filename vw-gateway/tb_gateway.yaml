@@ -1,7 +1,7 @@
 thingsboard:
   host: iot.yuccasoft.com
   port: 1883
-  remoteShell: false
+  remoteShell: true
   remoteConfiguration: false
   statistics:
     enable: true
@@ -53,7 +53,6 @@ connectors:
     type: printer/cups #type - folder name in extensions, with connector file configuration 
     configuration: extensions/printer/cups/cups.json
     class: CUPSPro
-
 
 #  -
 #    name: Custom Serial Connector

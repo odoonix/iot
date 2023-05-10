@@ -1,6 +1,7 @@
 {
-    "deviceName": "ZkTec_UF100PLUS",
-    "deviceType": "default",
+    "deviceName": "zktec_offic",
+    "deviceType": "attendance",
+   
     
     "device": {
         "name" : "zktec",

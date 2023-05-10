@@ -8,6 +8,7 @@ import time
 import pytz
 import os
 import logging
+import signal
 
  
 class ZktecPro(Connector, Thread):
@@ -49,7 +50,7 @@ class ZktecPro(Connector, Thread):
         return self.name
 
     def is_connected(self):
-        return self.connection and self.connection.is_connect
+        return self.connection
 
     def timezone(self, attendence):
         tz = pytz.FixedOffset(int(self._timezone))
@@ -185,6 +186,7 @@ class ZktecPro(Connector, Thread):
                 result = {
                     'deviceName': self.config.get('deviceName', 'ZktecDevice'),
                     'deviceType': self.config.get('deviceType', 'default'),
+                    
                     'attributes': [],
                     'telemetry': [],
                 }
@@ -201,9 +203,18 @@ class ZktecPro(Connector, Thread):
                 
                 # Send Telemetry
                 for attendence in attendances:
+                    # Change key telemetry 
                     attendence.timestamp = self.timezone(attendence)
+                    if attendence.punch == 1:
+                            attendence.punch = 'in'
+                    elif attendence.punch == 4:
+                        attendence.punch = 'out'
+                
+                    
                     if attendence.timestamp > lastdatetime:
+                        
                         attendence_telemetry = self.send_telemetry(attendence)
+                        
                         result['telemetry'].append(attendence_telemetry)
                         lastdatetime = attendence.timestamp
                         with open('./extensions/attendence/zktec/%s.txt' % self.config.get('deviceName'), 'w') as f:

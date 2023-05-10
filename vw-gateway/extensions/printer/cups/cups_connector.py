@@ -1,15 +1,14 @@
 import cups  
 from threading import Thread
 from thingsboard_gateway.connectors.connector import Connector, log
-from pathlib import Path
-from zk import ZK
 from zk.exception import ZKErrorResponse,ZKNetworkError
-from datetime import datetime
 import time
 import pytz
 import os
 import logging
-
+from collections import Counter
+import signal
+import sys
 
 
 class CUPSPro(Connector, Thread): 
@@ -24,22 +23,23 @@ class CUPSPro(Connector, Thread):
 
         # Extract main sections from configuration ---------------------------------------------------------------------
         self.__prefix = config.get('prefix', 'prefix')
+        
         # XXX: maso, 2023: rais error if prefix is not set
-        
-        
         # Set up lifecycle flags ---------------------------------------------------------------------------------------
-        #self.connection = False  # Service variable for check connection to device
+        self.connection = False  # Service variable for check connection to device
         #self.__logger = logging.getLogger("zkteck-"+self._ip)
-
 
     def connect_device(self):
         """connects to the device throu tcp
         
         raise excpetion if connection fail
         """
-        self.connection = cups.Connection()
-
-            
+        try:
+            self.connection = cups.Connection()
+            self.printers = self.connection.getPrinters()
+        except (cups.IPPError) as e:
+            os.abort(403)
+           
     def open(self): 
         self.stopped = False
         self.start()
@@ -48,25 +48,62 @@ class CUPSPro(Connector, Thread):
         return self.name
 
     def is_connected(self):
-        return False #self.connection and self.connection.is_connect
-
+        return self.connection 
     
+    def find_jobs(self):
+        # Find jobs
+        dict_jobs_counter = {}
+        job_completed = self.connection.getJobs(which_jobs='completed')
+        job_not_completed = self.connection.getJobs(which_jobs='not-completed')
+        job_all = self.connection.getJobs(which_jobs='all')
+
+        # Completed Jobs
+        result_job_completed= []
+        for job in job_completed:
+            string = self.connection.getJobAttributes(job)['job-printer-uri']
+            printer_name_for_select_job = list(string.split("/"))[-1]
+            result_job_completed.append(printer_name_for_select_job)
+        dict_count_job_completed = Counter(result_job_completed)
+
+        # Not_Completed Jobs
+        result_job_not_completed= []
+        for job in job_not_completed:
+            string = self.connection.getJobAttributes(job)['job-printer-uri']
+            printer_name_for_select_job = list(string.split("/"))[-1]
+            result_job_not_completed.append(printer_name_for_select_job)
+        dict_count_job_not_completed = Counter(result_job_not_completed)
+
+        # All Jobs
+        result_job_all= []
+        for job in job_all:
+            string = self.connection.getJobAttributes(job)['job-printer-uri']
+            printer_name_for_select_job = list(string.split("/"))[-1]
+            result_job_all.append(printer_name_for_select_job)
+        dict_count_job_all = Counter(result_job_all)
+
+        # Add Counter jobs
+        dict_jobs_counter["Completed_jobs"] = dict_count_job_completed
+        dict_jobs_counter["not_completed_jobs"] = dict_count_job_not_completed
+        dict_jobs_counter["all_jobs"] = dict_count_job_all
+        
+        return dict_jobs_counter
+
     # Main method of thread, must contain an infinite loop and all calls to data receiving/processing functions.
     def run(self):
         while (True):
             try:
-                
                 if not self.is_connected():
                     self.connect_device()
                     
-                printers = self.connection.getPrinters()
-                for key, config in printers.items():
+                # Find jobs
+                dict_count_job_all = self.find_jobs() 
+                for key, config in self.printers.items():
                     result = {
                         'deviceName': self.__prefix + key,
                         'deviceType': self.config.get('deviceType', 'default'),
                         'attributes': [],
                         'telemetry': [],
-                    }
+                    } 
                     
                     # Send attribute 
                     for attribute_key in ['printer-is-shared', 'printer-state', 'printer-state-message', 'printer-state-reasons', 'printer-type',
@@ -75,35 +112,42 @@ class CUPSPro(Connector, Thread):
                             attribute_key: config[attribute_key]
                         })
                         
-                    # TODO: maso, 2023: check if there is a telemetry
                     # Send telemetry
-                    job_not_completed = len(self.connection.getJobs(which_jobs='not-completed'))
-                    job_completed = len(self.connection.getJobs(which_jobs='completed'))
-                    job_all = len(self.connection.getJobs(which_jobs='all'))
-                    
-                    result['telemetry'].append({"job_not_completed" : job_not_completed})
-                    result['telemetry'].append({"job_completed" : job_completed})
-                    result['telemetry'].append({"job_all": job_all})
-                    
+                    for key_counter , value_counter in dict_count_job_all.items():
+                        result['telemetry'].append({
+                        key_counter: value_counter[key]
+                    })
+
                     # Send result to thingsboard
                     self.gateway.send_to_storage(self.get_name(), result)
     
-            except :
+            except:
                 logging.error("Printer Not Connected")
                 result['attributes'].append({"Printer Error" : True})
-                
+            
             time.sleep(5)
-
+    
     def close(self):
-        if self.connection:
-            self.connection.disconnect()
-
+        #printer_names = self.connection.printers.keys()
+        #for printer_name in printer_names:    
+        #        self.connection.disablePrinter(printer_name)
+        #signal.signal(signal.SIGINT, self.signal_handler)
+        #signal.signal(signal.SIGINT, self.stop())
+        pass
+        
     def on_attributes_update(self, content):
         pass
-
+    
+    def print_file(self, printer_name , printer_file):
+        printid = self.connection.printFile(printer_name, printer_file ,'' , {})
+        
     def server_side_rpc_handler(self, content):
-        pass
+        params = content["data"]["params"]
+        method_name = content["data"]["method"]
+        if method_name == "print_file":
+            self.print_file(params["printer_name"], params["printer_file"])
+        #print(content)
+        
 
 
- #close//is_connected//telemetry job//exept 
- 
+ #//try exept 
