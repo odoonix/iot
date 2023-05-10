@@ -126,12 +126,12 @@ TODO: جدول تغییرات اضافه شود.
     "things_id": {
       "description": "The unique identifier for a things who send the message",
       "type": "string",
-      "max_length": 128
+      "max_length": 
     },
     "employee_id" : {
       "description": "The unique identifier for a employee",
       "type": "string",
-      "max_length": 10
+      "max_length": 
     },
     "timestamp" : {
       "description": "The date recorded in the device",
@@ -142,7 +142,7 @@ TODO: جدول تغییرات اضافه شود.
     "punch" : {
       "description": "Indicates entry or exit. It accepts two values 'in' or 'out' ",
       "type": "string",
-      "max_length": 3
+      "max_length": 
     },
     
   },
