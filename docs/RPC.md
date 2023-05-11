@@ -10,18 +10,29 @@
 
 اگر فرض کنیم دستگاه موردنظر یک دستگاه حضور و غیاب باشد. ما نیاز داریم به درخواست:
 
-# 1- ثبت کاربر جدید (متد add_user)
+### 1- ثبت کاربر جدید (متدcreate_user)
 
 یعنی به ازای هر کاربری که درodoo ثبت میشه باید اون کاربر در دستگاه هم ثبت بشه
 
-در خواست باید شامل نام متد add_user و پارامترهای موردنیاز باشه
+در خواست باید شامل نام متد create_user  و پارامترهای موردنیاز باشه
 
-پارامترهای موردنیاز متد add_user : 
-uid : کاربر uid
+پارامترهای موردنیاز متدcreate_user : 
+uid : کاربر uid  (int, required, )
 
-user_id : کاربر id
+name : نام کاربر (str)
 
-user_name : نام کاربر
+privilege : امتیاز کاربر  (str)
+
+password : رمز کاربر (str)
+
+group_id : گروه id (str) 
+
+user_id : کاربر id (str)
+
+card : card (int, required, )
+
+*نکته : ما فرض میکنیم uid همیشه با user_id برابر است. 
+
 
 
 ### نمونه ای از درخواست ارسالی
@@ -29,32 +40,143 @@ user_name : نام کاربر
 
 ```json
 {
-  "method": "add_user",
-
+  {
+  "method": "create_user",
   "params": {
-  "uid" : 1
-   "user_id" : "1",
-   "user_name" : "ali"
+    "uid": "102",
+    "name" : "",
+    "privilege" : "",
+    "password" : "",
+    "group_id" : "",
+    "user_id" : "",
+    "card" : "0" 
   }
 }
 ```
 
-## نمونه ای از خروجیه درخواست ارسال شده از odoo . این خروجی در gateway تحت عنوان content از متد server_side_rpc_handler بدست میاد
+### نمونه ای از متد create_user
+
 ```
-{'device': 'zktec',
-  'data': {
-    'id': 1, 
-    'method': 'add_user',
-    'params': {"uid" : 1 ,'user_id': '1', 'user_name': 'ali'}
-    }
+def create_user(self, uid, name, privilege, password, group_id, user_id, card):
+        self.connection.set_user(uid=uid, name=name, privilege=privilege, password=password, group_id=group_id, user_id=user_id, card=card)
+```
+
+### 2- حذف کاربر (متد del_user)
+
+یعنی به ازای هر کاربری که در odoo حذف میشه باید اون کاربر در دستگاه هم حذف بشه.
+
+درخواست باید شامل نام متد del_user و پارامترهای موردنیاز آن باشد.
+
+پارامترهای موردنیاز del_user :
+user_id : کاربری که حذف شده user_id
+
+### نمونه ای از درخواست ارسالی
+
+
+
+```json
+{
+  "method": "del_user",
+  "params": {
+    "user_id_delete" : "102"
   }
-```
-
-## نمونه ای از متد add_user
+}
 
 ```
-def add_user(self, user_id , user_name):
-        conn.set_user(uid= uid , name=user_name , privilege= '', password='', group_id='', user_id= user_id , card=0)
+
+### نمونه ای از متد del_user
+
+```
+def del_user(self , user_id_delete):
+        self.connection.delete_user(user_id=user_id_delete)
+```
+
+
+### 3- به روزرسانی اطلاعات کاربر (متد update_user )
+
+یعنی به ازای هر کاربری که در odoo به روز میشه اطلاعات اون کاربر در دستگاه هم باید به روز بشه.
+
+درخواست باید شامل نام متد update_user و پارامترهای موردنیاز آن باشد.
+
+پارامترهای مورد نیاز متد update_user :
+
+user_id_change : کاربری که قراره اطلاعاتش تغییر کند id 
+
+field_change : (uid, name, privilege, password, group_id, user_id, card) نام فیلدی که قرار هست تغییر کند
+
+value_change : مقدار جدیدی که قرار هست فیلد موردنظر بگیره
+
+### نمونه ای از درخواست ارسالی
+
+
+
+```json
+{
+  "method": "update_user",
+  "params": {
+    "user_id_change" : "101",
+    "field_change" : "name",
+    "value_change" : "zahra"
+  }
+}
+```
+
+### نمونه ای از متد update_user
+
+
+```
+def update_user(self, user_id_change, field_change, value_change):
+        # Find user
+        users = self.connection.get_users()
+        exist_user = 0
+        for item in users:
+            if item.user_id == user_id_change:
+                exist_user = item
+        # Change value of user
+        setattr(exist_user, field_change, value_change)
+        self.del_user(user_id_change)
+        self.connection.set_user(uid=exist_user.uid,
+                                 name=exist_user.name,
+                                 privilege=exist_user.privilege, 
+                                 password=exist_user.password,
+                                 group_id=exist_user.group_id,
+                                 user_id=exist_user.user_id,
+                                 card=exist_user.card
+                                 )
+```
+
+
+
+### نمونه ای از متد server_side_rpc_handler 
+
+```
+def server_side_rpc_handler(self, content):
+    params = content["data"]["params"]
+    method_name = content["data"]["method"]
+
+    # create_user
+    if method_name == "create_user":
+        self.create_user(int(params["uid"]),
+                        params["name"],
+                        params["privilege"],
+                        params["password"],
+                        params["group_id"],
+                        params["user_id"],
+                        int(params["card"])
+                        )
+
+    # delete user
+    if method_name == "del_user":
+        params = content["data"]["params"]
+        self.del_user(int(params["user_id_delete"]))
+
+    # update user
+    if method_name == "update_user":
+        self.update_user(params["user_id_change"], params["field_change"],  params["value_change"])
+
+    # change finger print
+    if method_name == "change_fingerprint":
+        self.change_fingerprint(params["user_id_change"])
 ```
 
 
@@ -74,7 +196,7 @@ def add_user(self, user_id , user_name):
  printer_file :آدرس فایلی که قرار هست پرینت بشه 
  
 
-## نمونه ای از درخواست ارسالی
+### نمونه ای از درخواست ارسالی
 ```json
 {
   "method": "print_file",
@@ -85,7 +207,7 @@ def add_user(self, user_id , user_name):
   }
 }
 ```
-## نمونه ای از خروجیه درخواست ارسال شده از odoo . این خروجی در gateway تحت عنوان content از متد server_side_rpc_handler بدست میاد
+### نمونه ای از خروجیه درخواست ارسال شده از odoo . این خروجی در gateway تحت عنوان content از متد server_side_rpc_handler بدست میاد
 ```
 {'device': 'branch01 RP-D10',
   'data': {
@@ -96,7 +218,7 @@ def add_user(self, user_id , user_name):
   }
 ```
 
-## نمونه ای از متد print_file
+### نمونه ای از متد print_file
 
 ```
 def print_file(self, printer_name , printer_file):
