@@ -150,9 +150,44 @@ def update_user(self, user_id_change, field_change, value_change):
 
 
 
-### نمونه ای از متد server_side_rpc_handler 
+# 4- ذخیره اثرانگشت ( متد save_fingerprint )
+
+مثلا از طرف odoo درخواست ذخیره اثر انگشت یک کاربر مشخص وارد میشه.
+
+درخواست باید شامل متد save_fingerprint و پارامترهای موردنیاز آن باشد.
+
+پارامترهای مورد نیاز متد save_fingerprint :
+
+uid_change : کاربری که قرار هست اثر انگشتش ذخیره بشه uid
+
+*نکته : متد ذخیره اثرانگشت با uid کار میکنه
+
+### نمونه ای از درخواست ارسالی
+
+```json
+{
+  "method": "save_fingerprint",
+  "params": {
+    "user_id_change" : "199"
+  }
+}
 
 ```
+
+### نمونه ای از متد save_fingerprint
+
+
+```python
+def save_fingerprint(self , uid_change):
+        # based on uid
+        self.connection.enroll_user(uid_change)
+```
+
+
+
+### نمونه ای از متد server_side_rpc_handler 
+
+```python
 def server_side_rpc_handler(self, content):
     params = content["data"]["params"]
     method_name = content["data"]["method"]
@@ -178,9 +213,12 @@ def server_side_rpc_handler(self, content):
         self.update_user(params["user_id_change"], params["field_change"],  params["value_change"])
 
     # change finger print
-    if method_name == "change_fingerprint":
-        self.change_fingerprint(params["user_id_change"])
+    if method_name == "save_fingerprint":
+        self.save_fingerprint(int(params["user_id_change"]))
 ```
+
+
+
 
 
 
