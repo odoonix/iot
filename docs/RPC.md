@@ -89,10 +89,28 @@ user_id : کاربری که حذف شده user_id
 
 ### نمونه ای از متد del_user
 
-```
+```python
 def del_user(self , user_id_delete):
         self.connection.delete_user(user_id=user_id_delete)
 ```
+
+### حذف همزمان چند کاربر
+
+### نمونه ای از درخواست ارسالی برای حذف چند کاربر
+
+```json
+{
+  "method": "del_user",
+  "params": {
+    
+      "0" : {"user_id_delete" : "109"},
+      "1" : {"user_id_delete" : "110"}
+  }
+}
+
+```
+
+
 
 
 ### 3- به روزرسانی اطلاعات کاربر (متد update_user )
