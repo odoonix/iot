@@ -10,14 +10,17 @@
 
 اگر فرض کنیم دستگاه موردنظر یک دستگاه حضور و غیاب باشد. ما نیاز داریم به درخواست:
 
-### 1- ثبت کاربر جدید (متدcreate_user)
+### 1- به روزرسانی همزمان چند کاربر  (متد update_user)
 
-یعنی به ازای هر کاربری که درodoo ثبت میشه باید اون کاربر در دستگاه هم ثبت بشه
+در این متد چک میشه. اگر کاربری با user_id ارسالی وجود داشت آن کاربر حذف میشه و کاربر جدیدی با داده های ارسالی ساخته میشه
 
-در خواست باید شامل نام متد create_user  و پارامترهای موردنیاز باشه
+اگر کاربری با user_id ارسالی وجود نداشت آن کاربر ساخته میشه
 
 
-پارامترهای موردنیاز متدcreate_user : 
+درخواست باید شامل نام متد update_user و پارامترهای موردنیاز آن باشد.
+
+
+پارامترهای موردنیاز متد update_user : 
 
 
 uid : کاربر uid  (int, required, )
@@ -43,25 +46,79 @@ card : card (int, required, )
 
 ```json
 {
-  {
-  "method": "create_user",
+  "method": "update_user",
   "params": {
-    "uid": "102",
-    "name" : "",
-    "privilege" : "",
-    "password" : "",
-    "group_id" : "",
-    "user_id" : "",
-    "card" : "0" 
+  
+      "0" : {
+      "uid": "33",
+      "name": "zahra",
+      "privilege":"",
+      "password" : "",
+      "group_id" : "",
+      "user_id" : "33",
+      "card" : "0"
+      },
+
+      "1" : {
+      "uid": "38",
+      "name": "fateme",
+      "privilege":"",
+      "password" : "",
+      "group_id" : "",
+      "user_id" : "38",
+      "card" : "0"
+      }
   }
 }
 ```
 
 ### نمونه ای از متد create_user
 
-```
-def create_user(self, uid, name, privilege, password, group_id, user_id, card):
-        self.connection.set_user(uid=uid, name=name, privilege=privilege, password=password, group_id=group_id, user_id=user_id, card=card)
+```python
+def update_user(self, uid, name, privilege, password, group_id, user_id, card):
+        # Check user is exist
+        users = self.connection.get_users()
+        exist_user = 0
+        
+        for item in users:
+            # user exist
+            if item.user_id == user_id:
+                exist_user = item
+            
+        # user not exist create
+        if exist_user == 0:
+            # user not exist Create user        
+            self.connection.set_user(uid=uid,
+                                name=name,
+                                privilege=privilege,
+                                password=password,
+                                group_id=group_id,
+                                user_id=user_id,
+                                card=card
+                                )
+        else:
+            # user is exist update / delete and create
+            # save finger print
+            
+            fingers = self.connection.get_templates()
+            
+            save_fingers = []
+            for finger in fingers:
+                if finger.uid == uid:
+                    save_fingers.append(finger)
+            
+            
+            self.del_user(user_id)    
+            self.connection.set_user(uid=uid,
+                                    name=name,
+                                    privilege=privilege,
+                                    password=password,
+                                    group_id=group_id,
+                                    user_id=user_id,
+                                    card=card
+                                    )
+            #add finger print
+            self.connection.save_user_template(uid, save_fingers)
 ```
 
 ### 2- حذف کاربر (متد del_user)
@@ -113,59 +170,6 @@ def del_user(self , user_id_delete):
 
 
 
-### 3- به روزرسانی اطلاعات کاربر (متد update_user )
-
-یعنی به ازای هر کاربری که در odoo به روز میشه اطلاعات اون کاربر در دستگاه هم باید به روز بشه.
-
-درخواست باید شامل نام متد update_user و پارامترهای موردنیاز آن باشد.
-
-پارامترهای مورد نیاز متد update_user :
-
-user_id_change : کاربری که قراره اطلاعاتش تغییر کند id 
-
-field_change : (uid, name, privilege, password, group_id, user_id, card) نام فیلدی که قرار هست تغییر کند
-
-value_change : مقدار جدیدی که قرار هست فیلد موردنظر بگیره
-
-### نمونه ای از درخواست ارسالی
-
-
-
-```json
-{
-  "method": "update_user",
-  "params": {
-    "user_id_change" : "101",
-    "field_change" : "name",
-    "value_change" : "zahra"
-  }
-}
-```
-
-### نمونه ای از متد update_user
-
-
-```
-def update_user(self, user_id_change, field_change, value_change):
-        # Find user
-        users = self.connection.get_users()
-        exist_user = 0
-        for item in users:
-            if item.user_id == user_id_change:
-                exist_user = item
-        # Change value of user
-        setattr(exist_user, field_change, value_change)
-        self.del_user(user_id_change)
-        self.connection.set_user(uid=exist_user.uid,
-                                 name=exist_user.name,
-                                 privilege=exist_user.privilege, 
-                                 password=exist_user.password,
-                                 group_id=exist_user.group_id,
-                                 user_id=exist_user.user_id,
-                                 card=exist_user.card
-                                 )
-```
-
 
 
 # 4- ذخیره اثرانگشت ( متد save_fingerprint )
@@ -207,32 +211,32 @@ def save_fingerprint(self , uid_change):
 
 ```python
 def server_side_rpc_handler(self, content):
-    params = content["data"]["params"]
-    method_name = content["data"]["method"]
-
-    # create_user
-    if method_name == "create_user":
-        self.create_user(int(params["uid"]),
-                        params["name"],
-                        params["privilege"],
-                        params["password"],
-                        params["group_id"],
-                        params["user_id"],
-                        int(params["card"])
-                        )
-
-    # delete user
-    if method_name == "del_user":
         params = content["data"]["params"]
-        self.del_user(int(params["user_id_delete"]))
-
-    # update user
-    if method_name == "update_user":
-        self.update_user(params["user_id_change"], params["field_change"],  params["value_change"])
-
-    # change finger print
-    if method_name == "save_fingerprint":
-        self.save_fingerprint(int(params["user_id_change"]))
+        method_name = content["data"]["method"]
+        
+        # update_user
+        # TODO : Fixed the error of sending multiple data at the same time 
+        if method_name == "update_user":
+            for key, value in params.items():
+                self.update_user(int(value["uid"]),
+                                value["name"],
+                                value["privilege"],
+                                value["password"],
+                                value["group_id"],
+                                value["user_id"],
+                                int(value["card"])
+                                )
+            
+        # delete user
+        if method_name == "del_user":
+            #params = content["data"]["params"]
+            #self.del_user(int(params["user_id_delete"]))
+            for key, value in params.items():            
+                self.del_user(value['user_id_delete'])
+                
+        # change finger print
+        if method_name == "save_fingerprint":
+            self.save_fingerprint(int(params["user_id_change"]))
 ```
 
 
