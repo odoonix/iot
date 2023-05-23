@@ -12,7 +12,7 @@ thingsboard:
   checkConnectorsConfigurationInSeconds: 60
   handleDeviceRenaming: true
   checkingDeviceActivity:
-    checkDeviceInactivity: true
+    checkDeviceInactivity: false
     inactivityTimeoutSeconds: 5
     inactivityCheckPeriodSeconds: 10
   security:
@@ -54,6 +54,11 @@ connectors:
     configuration: extensions/printer/cups/cups.json
     class: CUPSPro
 
+   #-
+   # name: MQTT Broker Connector
+   # type: mqtt
+   # configuration: mqtt.json
+    
 #  -
 #    name: Custom Serial Connector
 #    type: serial

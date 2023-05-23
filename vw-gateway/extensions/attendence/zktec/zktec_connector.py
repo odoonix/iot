@@ -1,16 +1,22 @@
+import json
 from threading import Thread
 from thingsboard_gateway.connectors.connector import Connector, log
 from pathlib import Path
-from zk import ZK
+from zk import ZK,const
 from zk.exception import ZKErrorResponse,ZKNetworkError
 from datetime import datetime
 import time
 import pytz
-import os
 import logging
+from simplejson import dumps
+from retry import retry
+import threading
 import signal
 
- 
+
+
+sem = threading.Semaphore(2)
+
 class ZktecPro(Connector, Thread):
  
     def __init__(self, gateway, config, connector_type):
@@ -39,7 +45,7 @@ class ZktecPro(Connector, Thread):
         raise excpetion if connection fail
         """
         zk = ZK(self._ip, port=int(self._port), timeout=5, password=int(
-            self._password), force_udp=False, ommit_ping=False)
+            self._password), force_udp=False, ommit_ping=False, verbose=False)
         self.connection = zk.connect()
 
     def open(self): 
@@ -182,6 +188,7 @@ class ZktecPro(Connector, Thread):
     # Main method of thread, must contain an infinite loop and all calls to data receiving/processing functions.
     def run(self):
         while (True):
+            sem.acquire()
             try:
                 result = {
                     'deviceName': self.config.get('deviceName', 'ZktecDevice'),
@@ -223,36 +230,161 @@ class ZktecPro(Connector, Thread):
             except ZKErrorResponse as e:
                 self.__logger.error("ZKTec failt to get response from device : %s", e)
                 if self.connection:
-                    # self.connection.disconnect()
                     self.connection = False
                 result['attributes'].append({"ZKTec Response Error" : True})
                 
             except ZKNetworkError as netex:
                 self.__logger.error("ZKTec network error : %s", netex)
                 if self.connection:
-                    # self.connection.disconnect()
                     self.connection = False
                 result['attributes'].append({"ZKTec Network Error" : True})
                     
             except Exception as ex:
                 logging.error('ZKTec unsupported exception happend:%s', ex)
                 if self.connection:
-                    # self.connection.disconnect()
                     self.connection = False
                 result['attributes'].append({"ZKTec Error" : True})
-             
-            # Send result to thingsboard
-            self.gateway.send_to_storage(self.get_name(), result)
-            time.sleep(5)
-
+            
+            else: 
+                # Send result to thingsboard
+                self.gateway.send_to_storage(self.get_name(), result)
+                
+            finally:
+                sem.release()
+                time.sleep(1)    
+        
     def close(self):
         if self.connection:
             self.connection.disconnect()
 
     def on_attributes_update(self, content):
         pass
-
+    
+    def update_user(self, params , content):
+        
+        if not self.connection:
+            raise Exception("Device is not connected")
+        users = self.connection.get_users()
+        
+        for key, value in params.items():
+            # Check user is exist        
+            exist_user = 0
+            for item in users:
+                if item.user_id == value["user_id"]:
+                    exist_user = item
+                
+                
+            # user not exist Create user 
+            if exist_user == 0:
+                self.connection.set_user(int(value["uid"]),
+                            value["name"],
+                            value["privilege"],
+                            value["password"],
+                            value["group_id"],
+                            value["user_id"],
+                            int(value["card"])
+                            )
+            else:
+                # user is exist delete and create
+                # save finger print
+                
+                fingers = self.connection.get_templates()
+                
+                save_fingers = []
+                for finger in fingers:
+                    if finger.uid == value["uid"]:
+                        save_fingers.append(finger)
+                
+                
+                self.connection.delete_user(user_id=value["user_id"])
+                  
+                self.connection.set_user(int(value["uid"]),
+                            value["name"],
+                            value["privilege"],
+                            value["password"],
+                            value["group_id"],
+                            value["user_id"],
+                            int(value["card"])
+                            )
+                # add finger print
+                self.connection.save_user_template(value["uid"], save_fingers) 
+                  
+            self.gateway.send_rpc_reply(
+                            device= content["device"], 
+                            req_id= content["data"]["id"],
+                            content = {"success_sent": 'True'}
+                        )
+           
+    def del_user(self , params , content):
+        if not self.connection:
+            raise Exception("Device is not connected")
+        
+        for key, value in params.items():              
+            
+            self.connection.delete_user(user_id=value['user_id_delete'])
+            
+            self.gateway.send_rpc_reply(
+            device= content["device"], 
+            req_id= content["data"]["id"],
+            content = {"success_sent": 'True'}
+            )
+     
+    def update_fingerprint(self, params):
+        # TODO : add toway rpc for get template in rpc reply
+        if not self.connection:
+            raise Exception("Device is not connected")
+     
+        self.connection.enroll_user(int(params["user_id_change"]))
+        
+        #template = self.connection.get_user_template(uid=int(params["user_id_change"]), temp_id=0)
+        
     def server_side_rpc_handler(self, content):
-        pass
-
-
+        sem.acquire()
+        params = content["data"]["params"]
+        method_name = content["data"]["method"]
+        
+        for i in range(0,3):
+            try:
+                # update_user
+                if method_name == "update_user":
+                    self.update_user(params, content)
+                    break
+                
+                # delete user
+                if method_name == "del_user":
+                    self.del_user(params, content)
+                    break
+                    
+                # update fingerprint 
+                if method_name == "update_fingerprint":
+                    self.update_fingerprint(params)
+                    break
+                    
+            except ZKErrorResponse as e:
+                self.connect_device()
+                self.__logger.error("ZKTec failt to get response from device : %s", e)
+                continue
+            
+            except ZKNetworkError as netex:
+                self.connect_device()
+                self.__logger.error("ZKTec network error : %s", netex)
+                continue
+            
+            except Exception as ex :
+                self.connect_device()
+                self.__logger.error("ZKTec unsupported exception happend : %s", ex)
+                continue
+            
+            else:
+                self.__logger.error("ZKTec unsupported exception happend _ else error")
+                self.gateway.send_rpc_reply(
+                    device= content["device"], 
+                    req_id= content["data"]["id"],
+                    content = {"success_sent":"False" , "message" :"ZKTec unsupported exception happend _ else error" }
+                )
+                break
+            
+            finally:
+                sem.release()
+                time.sleep(0.25)
+        

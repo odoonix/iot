@@ -1,5 +1,6 @@
 connected_devices.json
 .vscode
-extensions/attendence/zktec/ZkTec_UF100PLUS.txt
+extensions/attendence/zktec/zktec_offic.txt
 extensions/printer/cups/a.txt
 extensions/printer/cups/pycups.py
+extensions/attendence/zktec/pyzk.py
