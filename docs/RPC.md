@@ -23,6 +23,7 @@
 پارامترهای موردنیاز متد update_user : 
 
 
+
 uid : کاربر uid  (int, required, )
 
 name : نام کاربر (str)
@@ -196,13 +197,19 @@ uid_change : کاربری که قرار هست اثر انگشتش ذخیره ب
 
 ```
 
-### نمونه ای از متد save_fingerprint
+### نمونه ای از متد update_fingerprint
 
 
 ```python
-def save_fingerprint(self , uid_change):
-        # based on uid
-        self.connection.enroll_user(uid_change)
+def update_fingerprint(self, params):
+        if not self.connection:
+            raise Exception("Device is not connected")
+     
+        self.connection.enroll_user(int(params["user_id_change"]))
+        
+        #template = self.connection.get_user_template(uid=int(params["user_id_change"]), temp_id=0)
+        
+
 ```
 
 
