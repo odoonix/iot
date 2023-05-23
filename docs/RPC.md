@@ -1,4 +1,12 @@
+
+
+# چه کسی بخواند؟
+
+در این سند پروتکل rpc به صورت فنی بیان شده و برای توسعه دهندگان مناسب است
+.
 # RPC
+
+
 
 در RPC از سمت odoo (گیرنده) در خواست میاد و gateway thingsboard ( سرور ) به این درخواست پاسخ میده. 
 
@@ -6,22 +14,40 @@
 
 هدف اینه هر درخواستی که از سمت odoo میاد یک متد با پارامترهاش را ارسال کنه. مطابق اون متد و پارامترها در gateway درخواست انجام میشه.
 
-## Attendence
+# Attendence
 
 اگر فرض کنیم دستگاه موردنظر یک دستگاه حضور و غیاب باشد. ما نیاز داریم به درخواست:
 
-# 1- ثبت کاربر جدید (متد add_user)
+### 1- به روزرسانی همزمان چند کاربر  (متد update_user)
 
-یعنی به ازای هر کاربری که درodoo ثبت میشه باید اون کاربر در دستگاه هم ثبت بشه
+در این متد چک میشه. اگر کاربری با user_id ارسالی وجود داشت آن کاربر حذف میشه و کاربر جدیدی با داده های ارسالی ساخته میشه
 
-در خواست باید شامل نام متد add_user و پارامترهای موردنیاز باشه
+اگر کاربری با user_id ارسالی وجود نداشت آن کاربر ساخته میشه
 
-پارامترهای موردنیاز متد add_user : 
-uid : کاربر uid
 
-user_id : کاربر id
+درخواست باید شامل نام متد update_user و پارامترهای موردنیاز آن باشد.
 
-user_name : نام کاربر
+
+پارامترهای موردنیاز متد update_user : 
+
+
+
+uid : کاربر uid  (int, required, )
+
+name : نام کاربر (str)
+
+privilege : امتیاز کاربر  (str)
+
+password : رمز کاربر (str)
+
+group_id : گروه id (str) 
+
+user_id : کاربر id (str)
+
+card : card (int, required, )
+
+*نکته : ما فرض میکنیم uid همیشه با user_id برابر است. 
+
 
 
 ### نمونه ای از درخواست ارسالی
@@ -29,37 +55,241 @@ user_name : نام کاربر
 
 ```json
 {
-  "method": "add_user",
-
+  "method": "update_user",
   "params": {
-  "uid" : 1
-   "user_id" : "1",
-   "user_name" : "ali"
+  
+      "0" : {
+      "uid": "33",
+      "name": "zahra",
+      "privilege":"",
+      "password" : "",
+      "group_id" : "",
+      "user_id" : "33",
+      "card" : "0"
+      },
+
+      "1" : {
+      "uid": "38",
+      "name": "fateme",
+      "privilege":"",
+      "password" : "",
+      "group_id" : "",
+      "user_id" : "38",
+      "card" : "0"
+      }
   }
 }
 ```
 
-## نمونه ای از خروجیه درخواست ارسال شده از odoo . این خروجی در gateway تحت عنوان content از متد server_side_rpc_handler بدست میاد
+### نمونه ای از متد update_user
+
+```python
+def update_user(self, params , content):
+    if not self.connection:
+        raise Exception("Device is not connected")
+    users = self.connection.get_users()
+
+    for key, value in params.items():
+        # Check user is exist        
+        exist_user = 0
+        for item in users:
+            if item.user_id == value["user_id"]:
+                exist_user = item
+
+
+        # user not exist Create user 
+        if exist_user == 0:
+            self.connection.set_user(int(value["uid"]),
+                        value["name"],
+                        value["privilege"],
+                        value["password"],
+                        value["group_id"],
+                        value["user_id"],
+                        int(value["card"])
+                        )
+        else:
+            # user is exist delete and create
+            # save finger print
+
+            fingers = self.connection.get_templates()
+
+            save_fingers = []
+            for finger in fingers:
+                if finger.uid == value["uid"]:
+                    save_fingers.append(finger)
+
+
+            self.connection.delete_user(user_id=value["user_id"])
+
+            self.connection.set_user(int(value["uid"]),
+                        value["name"],
+                        value["privilege"],
+                        value["password"],
+                        value["group_id"],
+                        value["user_id"],
+                        int(value["card"])
+                        )
+            # add finger print
+            self.connection.save_user_template(value["uid"], save_fingers) 
+
+        self.gateway.send_rpc_reply(
+                        device= content["device"], 
+                        req_id= content["data"]["id"],
+                        content = {"success_sent": 'True'}
+                    )
 ```
-{'device': 'zktec',
-  'data': {
-    'id': 1, 
-    'method': 'add_user',
-    'params': {"uid" : 1 ,'user_id': '1', 'user_name': 'ali'}
-    }
+
+### 2- حذف کاربر (متد del_user)
+
+یعنی به ازای هر کاربری که در odoo حذف میشه باید اون کاربر در دستگاه هم حذف بشه.
+
+درخواست باید شامل نام متد del_user و پارامترهای موردنیاز آن باشد.
+
+پارامترهای موردنیاز del_user :
+user_id : کاربری که حذف شده user_id
+
+### نمونه ای از درخواست ارسالی
+
+
+نمونه ای از درخواست ارسالی برای حذف چند کاربر
+
+```json
+{
+  "method": "del_user",
+  "params": {
+    
+      "0" : {"user_id_delete" : "109"},
+      "1" : {"user_id_delete" : "110"}
   }
-```
-
-## نمونه ای از متد add_user
+}
 
 ```
-def add_user(self, user_id , user_name):
-        conn.set_user(uid= uid , name=user_name , privilege= '', password='', group_id='', user_id= user_id , card=0)
+
+### نمونه ای از متد del_user
+
+```python
+def del_user(self , params , content):
+    if not self.connection:
+        raise Exception("Device is not connected")
+
+    for key, value in params.items():              
+
+        self.connection.delete_user(user_id=value['user_id_delete'])
+
+        self.gateway.send_rpc_reply(
+        device= content["device"], 
+        req_id= content["data"]["id"],
+        content = {"success_sent": 'True'}
+        )
 ```
 
 
 
-## Printer
+
+### 4- ذخیره اثرانگشت ( متد save_fingerprint )
+
+مثلا از طرف odoo درخواست ذخیره اثر انگشت یک کاربر مشخص وارد میشه.
+
+درخواست باید شامل متد save_fingerprint و پارامترهای موردنیاز آن باشد.
+
+پارامترهای مورد نیاز متدupdate_fingerprint  :
+
+
+uid_change : کاربری که قرار هست اثر انگشتش ذخیره بشه uid
+
+*نکته : متد ذخیره اثرانگشت با uid کار میکنه
+
+
+### نمونه ای از درخواست ارسالی
+
+
+```json
+{
+  "method": "update_fingerprint",
+  "params": {
+    "user_id_change" : "199"
+  }
+}
+
+```
+
+### نمونه ای از متد update_fingerprint
+
+
+```python
+def update_fingerprint(self, params):
+        if not self.connection:
+            raise Exception("Device is not connected")
+     
+        self.connection.enroll_user(int(params["user_id_change"]))
+        
+        #template = self.connection.get_user_template(uid=int(params["user_id_change"]), temp_id=0)
+        
+
+```
+
+
+
+### نمونه ای از متد server_side_rpc_handler 
+
+```python
+
+def server_side_rpc_handler(self, content):
+    sem.acquire()
+    params = content["data"]["params"]
+    method_name = content["data"]["method"]
+
+    for i in range(0,3):
+        try:
+            # update_user
+            if method_name == "update_user":
+                self.update_user(params, content)
+                break
+
+            # delete user
+            if method_name == "del_user":
+                self.del_user(params, content)
+                break
+
+            # live finger print
+            if method_name == "update_fingerprint":
+                self.update_fingerprint(params)
+                break
+
+        except ZKErrorResponse as e:
+            self.connect_device()
+            self.__logger.error("ZKTec failt to get response from device : %s", e)
+            continue
+
+        except ZKNetworkError as netex:
+            self.connect_device()
+            self.__logger.error("ZKTec network error : %s", netex)
+            continue
+
+        except Exception as ex :
+            self.connect_device()
+            self.__logger.error("ZKTec unsupported exception happend : %s", ex)
+            continue
+
+        else:
+            self.__logger.error("ZKTec unsupported exception happend _ else error")
+            self.gateway.send_rpc_reply(
+                device= content["device"], 
+                req_id= content["data"]["id"],
+                content = {"success_sent":"False" , "message" :"ZKTec unsupported exception happend _ else error" }
+            )
+            break
+
+        finally:
+            sem.release()
+            time.sleep(0.25)
+        
+
+```
+
+
+
+# Printer
 
 ### 1-پرینت کردن فایل ( متد print_file)
 
@@ -74,7 +304,7 @@ def add_user(self, user_id , user_name):
  printer_file :آدرس فایلی که قرار هست پرینت بشه 
  
 
-## نمونه ای از درخواست ارسالی
+### نمونه ای از درخواست ارسالی
 ```json
 {
   "method": "print_file",
@@ -85,7 +315,7 @@ def add_user(self, user_id , user_name):
   }
 }
 ```
-## نمونه ای از خروجیه درخواست ارسال شده از odoo . این خروجی در gateway تحت عنوان content از متد server_side_rpc_handler بدست میاد
+### نمونه ای از خروجیه درخواست ارسال شده از odoo . این خروجی در gateway تحت عنوان content از متد server_side_rpc_handler بدست میاد
 ```
 {'device': 'branch01 RP-D10',
   'data': {
@@ -96,7 +326,7 @@ def add_user(self, user_id , user_name):
   }
 ```
 
-## نمونه ای از متد print_file
+### نمونه ای از متد print_file
 
 ```
 def print_file(self, printer_name , printer_file):
