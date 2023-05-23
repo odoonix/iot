@@ -1,5 +1,9 @@
 # نحوه استفاده از input_oca  و output_oca
 
+از این پروتکل به عنوان رابط دستگاه و odoo استفاده میشود
+
+# Attendence
+
 
 
 # نصب ماژول های موردنیاز
@@ -19,7 +23,7 @@ IoT AMQP - IoT Input - IoT Base - IoT Output - Iot ThingsBoard
 
 
 # inout_oca
-برای ارسال درخواست از سمت odoo به دستگاه استفاده میشود
+برای ارسال درخواست از دستگاه به سمت odoo استفاده میشود
 
 
 ### تنظیمات odoo برای input
@@ -50,17 +54,17 @@ return {
 
 جزپیات گره rest api call: 
 
-end poinr url pattern: http://odoo16:8069/iot/123/action?passphrase=123            برابر با 123 است passphrae و serial با فرض اینکه 
+end poinr url pattern: http://odoo16:8069/iot/123/action?passphrase=123      =>    برابر با 123 است passphrae و serial با فرض اینکه 
 
 request method : POST
 
 Header :
 
-Content-Type : application/json        قبول میکند json فقط thingsboard چون
+Content-Type : application/json     =>    قبول میکند json فقط thingsboard چون
 
-X-Odoo-dbfilter : ^demo\Z              است  demo  مخصوص
+X-Odoo-dbfilter : ^demo\Z        =>      است  demo  مخصوص
 
-HTTP_X_ODOO_DBFILTER : ^demo\Z         است  demo  مخصوص
+HTTP_X_ODOO_DBFILTER : ^demo\Z    =>     است  demo  مخصوص
 
 
 
@@ -68,7 +72,7 @@ HTTP_X_ODOO_DBFILTER : ^demo\Z         است  demo  مخصوص
 
 # output_oca
 
-برای ارسال درخواست از 
+برای ارسال درخواست از odoo به دستگاه استفاده میشود.  
 
 ### تنظیمات odoo برای output
 
@@ -79,5 +83,21 @@ HTTP_X_ODOO_DBFILTER : ^demo\Z         است  demo  مخصوص
 
 برای دریافت id دستگاه در thingsboard به آدرس https://iot.yuccasoft.com/devices رفته روی دستگاه موردنظر کلیک کنید id دستگاه را کپی کنید
 
+
+### تنظیمات thingsboard برای output
+
+نیاز به یک گره rpc call مطابق تصویر زیر داریم
+
+
+![alt text](https://s8.uupload.ir/files/screenshot_from_2023-05-23_14-38-15_qclz.png)
+
+
+
+
+
+### تصویر کامل از rule chain attendence
+
+
+![alt text](https://s8.uupload.ir/files/screenshot_from_2023-05-23_14-37-15_6v6d.png)
 
 
