@@ -83,6 +83,12 @@ HTTP_X_ODOO_DBFILTER : ^demo\Z    =>     است  demo  مخصوص
 
 برای دریافت id دستگاه در thingsboard به آدرس https://iot.yuccasoft.com/devices رفته روی دستگاه موردنظر کلیک کنید id دستگاه را کپی کنید
 
+سپس از تب configuration گزینه iot thingsboard را انتخاب کنید.
+
+در اینجا باید username و password ای که در حساب thingsboard دارید را وارد کنید
+
+مقدار domain را برابر باhttps://iot.yuccasoft.com/api/auth/login قرار دهید.
+
 
 ### تنظیمات thingsboard برای output
 
