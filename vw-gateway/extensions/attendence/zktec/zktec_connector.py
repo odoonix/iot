@@ -1,5 +1,6 @@
 import json
 from threading import Thread
+import traceback
 from thingsboard_gateway.connectors.connector import Connector, log
 from pathlib import Path
 from zk import ZK,const
@@ -44,9 +45,20 @@ class ZktecPro(Connector, Thread):
         
         raise excpetion if connection fail
         """
-        zk = ZK(self._ip, port=int(self._port), timeout=5, password=int(
-            self._password), force_udp=False, ommit_ping=False, verbose=False)
-        self.connection = zk.connect()
+        if self.connection and not self.connection.disconnect():
+            raise Exception("Fail to disconnect from device. Something bad happend.")
+            
+        self.connection = ZK(
+            self._ip, 
+            port=int(self._port), 
+            timeout=5, 
+            password=int(self._password), 
+            force_udp=True, 
+            ommit_ping=False, 
+            verbose=False
+        )
+        if not self.connection.connect():
+            raise Exception("Fail to connect to the device")
 
     def open(self): 
         self.stopped = False
@@ -56,7 +68,7 @@ class ZktecPro(Connector, Thread):
         return self.name
 
     def is_connected(self):
-        return self.connection
+        return self.connection and self.connection.is_connect
 
     def timezone(self, attendence):
         tz = pytz.FixedOffset(int(self._timezone))
@@ -146,8 +158,6 @@ class ZktecPro(Connector, Thread):
 
         device_attribute = {
             "ZKTec Error": False,
-            "ZKTec Network Error" : False,
-            "ZKTec Response Error" : False,
             "Records" : self.connection.records,
             "Max Records": self.connection.rec_cap,
             "Users": self.connection.users,
@@ -189,15 +199,15 @@ class ZktecPro(Connector, Thread):
     def run(self):
         while (True):
             sem.acquire()
-            try:
-                result = {
-                    'deviceName': self.config.get('deviceName', 'ZktecDevice'),
-                    'deviceType': self.config.get('deviceType', 'default'),
-                    
-                    'attributes': [],
-                    'telemetry': [],
-                }
+            result = {
+                'deviceName': self.config.get('deviceName', 'ZktecDevice'),
+                'deviceType': self.config.get('deviceType', 'default'),
                 
+                'attributes': [],
+                'telemetry': [],
+            }
+            
+            try:   
                 if not self.is_connected():
                     self.connect_device()
                     
@@ -227,29 +237,34 @@ class ZktecPro(Connector, Thread):
                         with open('./extensions/attendence/zktec/%s.txt' % self.config.get('deviceName'), 'w') as f:
                             f.write(str(lastdatetime))
                 
-            except ZKErrorResponse as e:
-                self.__logger.error("ZKTec failt to get response from device : %s", e)
-                if self.connection:
-                    self.connection = False
-                result['attributes'].append({"ZKTec Response Error" : True})
+            # except ZKErrorResponse as e:
+            #     self.__logger.error("ZKTec failt to get response from device : %s", e)
+            #     if self.connection:
+            #         self.connection = False
+            #     result['attributes'].append({"ZKTec Response Error" : True})
                 
-            except ZKNetworkError as netex:
-                self.__logger.error("ZKTec network error : %s", netex)
-                if self.connection:
-                    self.connection = False
-                result['attributes'].append({"ZKTec Network Error" : True})
+            # except ZKNetworkError as netex:
+            #     self.__logger.error("ZKTec network error : %s", netex)
+            #     if self.connection:
+            #         self.connection = False
+            #     result['attributes'].append({"ZKTec Network Error" : True})
                     
             except Exception as ex:
-                logging.error('ZKTec unsupported exception happend:%s', ex)
-                if self.connection:
-                    self.connection = False
+                logging.error('ZKTec unsupported exception happend: %s', ex)
                 result['attributes'].append({"ZKTec Error" : True})
-            
-            else: 
+                
+                
+                traceback.print_exc()
+                # Note: for network connection
+                try: 
+                    self.connect_device()
+                except:
+                    pass
+                
+  
+            finally:
                 # Send result to thingsboard
                 self.gateway.send_to_storage(self.get_name(), result)
-                
-            finally:
                 sem.release()
                 time.sleep(1)    
         
@@ -340,51 +355,42 @@ class ZktecPro(Connector, Thread):
         
     def server_side_rpc_handler(self, content):
         sem.acquire()
+        try:
+            self._server_side_rpc_handler(content, 3)
+        except Exception as ex :
+            self.__logger.error("ZKTec unsupported exception happend %s", ex)
+            traceback.print_exc()
+            
+            self.gateway.send_rpc_reply(
+                device= content["device"], 
+                req_id= content["data"]["id"],
+                content = {"success_sent":"False" , "message" :"ZKTec unsupported exception happend %s" % ex }
+            )
+        finally:
+            sem.release()
+            time.sleep(0.25)
+               
+    def _server_side_rpc_handler(self, content, tries_count=3):
         params = content["data"]["params"]
         method_name = content["data"]["method"]
-        
-        for i in range(0,3):
-            try:
+        try:
                 # update_user
-                if method_name == "update_user":
-                    self.update_user(params, content)
-                    break
+            if method_name == "update_user":
+                return self.update_user(params, content)
+            
+            # delete user
+            if method_name == "del_user":
+                return self.del_user(params, content)
                 
-                # delete user
-                if method_name == "del_user":
-                    self.del_user(params, content)
-                    break
-                    
-                # update fingerprint 
-                if method_name == "update_fingerprint":
-                    self.update_fingerprint(params)
-                    break
-                    
-            except ZKErrorResponse as e:
+            # update fingerprint 
+            if method_name == "update_fingerprint":
+                return self.update_fingerprint(params)
+        except ZKNetworkError as netex:
+            self.__logger.error("ZKTec network error detected : %s, %s", netex, traceback.extract_stack)
+            if tries_count > 0:
                 self.connect_device()
-                self.__logger.error("ZKTec failt to get response from device : %s", e)
-                continue
-            
-            except ZKNetworkError as netex:
-                self.connect_device()
-                self.__logger.error("ZKTec network error : %s", netex)
-                continue
-            
-            except Exception as ex :
-                self.connect_device()
-                self.__logger.error("ZKTec unsupported exception happend : %s", ex)
-                continue
-            
-            else:
-                self.__logger.error("ZKTec unsupported exception happend _ else error")
-                self.gateway.send_rpc_reply(
-                    device= content["device"], 
-                    req_id= content["data"]["id"],
-                    content = {"success_sent":"False" , "message" :"ZKTec unsupported exception happend _ else error" }
-                )
-                break
-            
-            finally:
-                sem.release()
-                time.sleep(0.25)
+                return self._server_side_rpc_handler(content, tries_count-1)
+            raise netex
+        
+        
         
