@@ -1,15 +1,15 @@
+import threading
+import traceback
 import cups  
 from threading import Thread
 from thingsboard_gateway.connectors.connector import Connector, log
-from zk.exception import ZKErrorResponse,ZKNetworkError
 import time
-import pytz
 import os
 import logging
 from collections import Counter
-import signal
 import sys
 
+sem = threading.Semaphore(1)
 
 class CUPSPro(Connector, Thread): 
 
@@ -23,11 +23,12 @@ class CUPSPro(Connector, Thread):
 
         # Extract main sections from configuration ---------------------------------------------------------------------
         self.__prefix = config.get('prefix', 'prefix')
+        self.__deviceName = config.get('deviceName', 'deviceName')
         
         # XXX: maso, 2023: rais error if prefix is not set
         # Set up lifecycle flags ---------------------------------------------------------------------------------------
         self.connection = False  # Service variable for check connection to device
-        #self.__logger = logging.getLogger("zkteck-"+self._ip)
+        self.__logger = logging.getLogger("cups-"+self.__deviceName)
 
     def connect_device(self):
         """connects to the device throu tcp
@@ -138,16 +139,40 @@ class CUPSPro(Connector, Thread):
     def on_attributes_update(self, content):
         pass
     
-    def print_file(self, printer_name , printer_file):
+    def print_file(self, printer_name , printer_file): 
         printid = self.connection.printFile(printer_name, printer_file ,'' , {})
         
     def server_side_rpc_handler(self, content):
+        sem.acquire()
+        try:
+            self._server_side_rpc_handler(content, 3)
+        except Exception as ex :
+            self.__logger.error("Cups unsupported exception happend %s", ex)
+            traceback.print_exc()
+            
+            self.gateway.send_rpc_reply(
+                device= content["device"], 
+                req_id= content["data"]["id"],
+                content = {"success_sent":"False" , "message" :"Cups unsupported exception happend %s" % ex }
+            )
+        finally: 
+            sem.release()
+            time.sleep(0.25)
+
+    
+    def _server_side_rpc_handler(self, content, tries_count=3):
         params = content["data"]["params"]
         method_name = content["data"]["method"]
-        if method_name == "print_file":
-            self.print_file(params["printer_name"], params["printer_file"])
-        #print(content)
-        
+        try:
+            if method_name == "print_file":
+                # printer_file is encode string so first decode string
+                str_decoded = params["printer_file"].decode('utf8', 'strict')
+                self.print_file(params["printer_name"], str_decoded)
+        except Exception as ex :
+            self.__logger.error("Cups unsupported exception happend : %s, %s", ex, traceback.extract_stack)
+            if tries_count > 0:
+                self.connect_device()
+                return self._server_side_rpc_handler(content, tries_count-1)
+            raise ex
+            
 
-
- #//try exept 

@@ -17,7 +17,7 @@ import signal
 
 
 
-sem = threading.Semaphore(2)
+sem = threading.Semaphore(1)
 
 class ZktecPro(Connector, Thread):
  
@@ -378,7 +378,7 @@ class ZktecPro(Connector, Thread):
                 req_id= content["data"]["id"],
                 content = {"success_sent":"False" , "message" :"ZKTec unsupported exception happend %s" % ex }
             )
-        finally:
+        finally: 
             sem.release()
             time.sleep(0.25)
                
