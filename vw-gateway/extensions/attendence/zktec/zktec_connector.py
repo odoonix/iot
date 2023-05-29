@@ -1,4 +1,5 @@
 import json
+import os
 from threading import Thread
 import traceback
 from thingsboard_gateway.connectors.connector import Connector, log
@@ -30,12 +31,13 @@ class ZktecPro(Connector, Thread):
 
         # Extract main sections from configuration ---------------------------------------------------------------------
         self.__device = config.get('device')
+        self.__storage_path = config.get('storage')
         self._name = self.__device.get('name', 'zktec')
         self._ip = self.__device.get('ip', '127.0.0.1')
         self._port = self.__device.get('port', "1883")
         self._password = self.__device.get('password', "1")
         self._timezone = self.__device.get('timezone', "210")
-
+        
         # Set up lifecycle flags ---------------------------------------------------------------------------------------
         self.connection = False  # Service variable for check connection to device
         self.__logger = logging.getLogger("zkteck-"+self._ip)
@@ -45,8 +47,8 @@ class ZktecPro(Connector, Thread):
         
         raise excpetion if connection fail
         """
-        if self.connection and not self.connection.disconnect():
-            raise Exception("Fail to disconnect from device. Something bad happend.")
+        # if self.connection and not self.connection.disconnect():
+        #     raise Exception("Fail to disconnect from device. Something bad happend.")
             
         self.connection = ZK(
             self._ip, 
@@ -86,12 +88,20 @@ class ZktecPro(Connector, Thread):
         attendence.timestamp = datetime.fromtimestamp(
             datetime.timestamp(dateTimeUts))
         return attendence.timestamp
+ 
+    def get_storage_path(self):
+        
+        path_storage = Path(self.__storage_path + '/%s.txt' % self.config.get('deviceName')) 
+        #path_storage = os.path.join(self.__storage_path,'/%s.txt' % self.config.get('deviceName'))
+        return path_storage
 
     def lastdatetime_text_file(self):
         # Fetch last date time
-        path = Path('./extensions/attendence/zktec/%s.txt' % self.config.get('deviceName'))
+        
+        path = self.get_storage_path()
+        
         if path.is_file():
-            with open('./extensions/attendence/zktec/%s.txt' % self.config.get('deviceName')) as f:
+            with open(path, 'r') as f:
                 lines = f.readlines()
                 lastdatetime = datetime.strptime(lines[0], '%Y-%m-%d %H:%M:%S')
         else:
@@ -197,6 +207,8 @@ class ZktecPro(Connector, Thread):
 
     # Main method of thread, must contain an infinite loop and all calls to data receiving/processing functions.
     def run(self):
+        path = self.get_storage_path()
+        
         while (True):
             sem.acquire()
             result = {
@@ -234,7 +246,7 @@ class ZktecPro(Connector, Thread):
                         
                         result['telemetry'].append(attendence_telemetry)
                         lastdatetime = attendence.timestamp
-                        with open('./extensions/attendence/zktec/%s.txt' % self.config.get('deviceName'), 'w') as f:
+                        with open(path, 'w') as f:
                             f.write(str(lastdatetime))
                 
             # except ZKErrorResponse as e:
