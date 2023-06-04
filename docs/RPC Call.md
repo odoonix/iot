@@ -230,65 +230,6 @@ def update_fingerprint(self, params):
 
 
 
-### نمونه ای از متد server_side_rpc_handler 
-
-```python
-
-def server_side_rpc_handler(self, content):
-    sem.acquire()
-    params = content["data"]["params"]
-    method_name = content["data"]["method"]
-
-    for i in range(0,3):
-        try:
-            # update_user
-            if method_name == "update_user":
-                self.update_user(params, content)
-                break
-
-            # delete user
-            if method_name == "del_user":
-                self.del_user(params, content)
-                break
-
-            # live finger print
-            if method_name == "update_fingerprint":
-                self.update_fingerprint(params)
-                break
-
-        except ZKErrorResponse as e:
-            self.connect_device()
-            self.__logger.error("ZKTec failt to get response from device : %s", e)
-            continue
-
-        except ZKNetworkError as netex:
-            self.connect_device()
-            self.__logger.error("ZKTec network error : %s", netex)
-            continue
-
-        except Exception as ex :
-            self.connect_device()
-            self.__logger.error("ZKTec unsupported exception happend : %s", ex)
-            continue
-
-        else:
-            self.__logger.error("ZKTec unsupported exception happend _ else error")
-            self.gateway.send_rpc_reply(
-                device= content["device"], 
-                req_id= content["data"]["id"],
-                content = {"success_sent":"False" , "message" :"ZKTec unsupported exception happend _ else error" }
-            )
-            break
-
-        finally:
-            sem.release()
-            time.sleep(0.25)
-        
-
-```
-
-
-
 # Printer
 
 ### 1-پرینت کردن فایل ( متد print_file)
@@ -300,9 +241,11 @@ def server_side_rpc_handler(self, content):
 پارامترهای مورد نیاز متد print_file : 
 
  printer_name : نام پرینتری که قراره پرینت کنه
+
+ content : دریافت میشه base64 محتوایی که قرار هست پرسینت بشه که به صورت
  
- printer_file :آدرس فایلی که قرار هست پرینت بشه 
- 
+ file_nme : با اون نام و پسوند در سیستمی که پرینتر بهش وصل هست ذخیره میشه contetn نام و پسوند فایلی هست که 
+
 
 ### نمونه ای از درخواست ارسالی
 ```json
@@ -310,20 +253,11 @@ def server_side_rpc_handler(self, content):
   "method": "print_file",
 
   "params": {
-    "printer_name": "RP-D10",
-    "printer_file": "/home/sanaz/viraweb123/odoo-iot/vw-gateway/extensions/printer/cups/a.txt"
+    "printer_name": "SII_RP_D10",
+     "contetn" :  base 64 image
+    "file_nme": "test.jpg",
   }
 }
-```
-### نمونه ای از خروجیه درخواست ارسال شده از odoo . این خروجی در gateway تحت عنوان content از متد server_side_rpc_handler بدست میاد
-```
-{'device': 'branch01 RP-D10',
-  'data': {
-    'id': 1, 
-    'method': 'print_file',
-    'params': {'printer_name': 'RP-D10', 'printer_file': '/home/sanaz/viraweb123/odoo-iot/vw-gateway/extensions/printer/cups/a.txt'}
-    }
-  }
 ```
 
 ### نمونه ای از متد print_file
