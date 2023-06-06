@@ -240,11 +240,10 @@ def update_fingerprint(self, params):
 
 پارامترهای مورد نیاز متد print_file : 
 
- printer_name : نام پرینتری که قراره پرینت کنه
 
  content : دریافت میشه base64 محتوایی که قرار هست پرسینت بشه که به صورت
  
- file_nme : با اون نام و پسوند در سیستمی که پرینتر بهش وصل هست ذخیره میشه contetn نام و پسوند فایلی هست که 
+ suffix_file_name : با اون پسوند در سیستمی که پرینتر بهش وصل هست ذخیره میشه contetn  پسوند فایلی هست که 
 
 
 ### نمونه ای از درخواست ارسالی
@@ -253,16 +252,15 @@ def update_fingerprint(self, params):
   "method": "print_file",
 
   "params": {
-    "printer_name": "SII_RP_D10",
-     "contetn" :  base 64 image
-    "file_nme": "test.jpg",
+    "contetn" :  base 64 image,
+    "suffix_file_name": "test.jpg"
   }
 }
 ```
 
 ### نمونه ای از متد print_file
 
-```
-def print_file(self, printer_name , printer_file):
+```python
+def print_file(self, printer_name , printer_file): 
         printid = self.connection.printFile(printer_name, printer_file ,'' , {})
 ```
