@@ -8,6 +8,8 @@ import os
 import logging
 from collections import Counter
 import sys
+import base64
+import tempfile
 
 sem = threading.Semaphore(1)
 
@@ -39,7 +41,7 @@ class CUPSPro(Connector, Thread):
             self.connection = cups.Connection()
             self.printers = self.connection.getPrinters()
         except (cups.IPPError) as e:
-            os.abort(403)
+            pass
            
     def open(self): 
         self.stopped = False
@@ -159,15 +161,27 @@ class CUPSPro(Connector, Thread):
             sem.release()
             time.sleep(0.25)
 
-    
     def _server_side_rpc_handler(self, content, tries_count=3):
         params = content["data"]["params"]
         method_name = content["data"]["method"]
+        
+        # printer_file is encode string so first decode string
         try:
             if method_name == "print_file":
-                # printer_file is encode string so first decode string
-                str_decoded = params["printer_file"].decode('utf8', 'strict')
-                self.print_file(params["printer_name"], str_decoded)
+                # create temporary directory
+                temp = tempfile.NamedTemporaryFile(suffix=params["suffix_file_name"])
+                
+                try:
+                    coded_string = params["content"]
+                    base64_decode = base64.b64decode(coded_string)
+                    text_file = open(temp.name, "wb")
+                    n = text_file.write(base64_decode)
+                    self.print_file(content["device"].replace(self.__prefix, ""), temp.name)
+                    #content["device"].replace(self.__prefix, "")
+                finally:
+                    temp.close()
+    
+                
         except Exception as ex :
             self.__logger.error("Cups unsupported exception happend : %s, %s", ex, traceback.extract_stack)
             if tries_count > 0:
@@ -176,3 +190,6 @@ class CUPSPro(Connector, Thread):
             raise ex
             
 
+#IPPError
+#HTTPEttor
+#try except

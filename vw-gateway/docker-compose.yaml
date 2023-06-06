@@ -4,4 +4,4 @@ services:
     build: .
     volumes:
       - ../configs:/app/configs/
-    # network_mode: "host"
+    # network_mode: "host" 
