@@ -35,7 +35,7 @@ IoT AMQP - IoT Input - IoT Base - IoT Output - Iot ThingsBoard
 
 ###تنظیمات odoo برای input
 
-در این بخش برای ساخت یک input نام input و قسمت call_model (نام متدی که قرار هست در کد سمت odoo هنگام دریافت داده اجرا شود اینجا نوشته میشود) را وارد کنید.
+در این بخش برای ساخت یک input نام input ، قسمت Call Function (نام متدی که قرار هست در کد سمت odoo هنگام دریافت داده اجرا شود) ، call_model (نام جدولی که قرار هست داده ها در آن وارد شود یعنی shadow table) ، serial و passphrase را وارد کنید.
 
 
 ### تنظیمات thingsboard برای input
