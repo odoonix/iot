@@ -16,7 +16,6 @@ import threading
 import signal
 
 
-
 sem = threading.Semaphore(1)
 
 class ZktecPro(Connector, Thread):
@@ -41,7 +40,13 @@ class ZktecPro(Connector, Thread):
         # Set up lifecycle flags ---------------------------------------------------------------------------------------
         self.connection = False  # Service variable for check connection to device
         self.__logger = logging.getLogger("zkteck-"+self._ip)
-
+        self.__deviceName = config.get('deviceName', 'deviceName')
+        self.__deviceType = config.get('deviceType', 'default')
+        
+        # Create device
+        self.gateway.add_device(self.__deviceName, {"connector": self},
+                                    device_type=self.__deviceType)
+ 
     def connect_device(self):
         """connects to the device throu tcp
         
@@ -55,9 +60,10 @@ class ZktecPro(Connector, Thread):
             port=int(self._port), 
             timeout=5, 
             password=int(self._password), 
-            force_udp=True, 
+            force_udp=False, 
             ommit_ping=False, 
-            verbose=False
+            verbose=False,
+            encoding='UTF-8',
         )
         if not self.connection.connect():
             raise Exception("Fail to connect to the device")
@@ -211,13 +217,22 @@ class ZktecPro(Connector, Thread):
         
         while (True):
             sem.acquire()
-            result = {
-                'deviceName': self.config.get('deviceName', 'ZktecDevice'),
-                'deviceType': self.config.get('deviceType', 'default'),
-                
-                'attributes': [],
-                'telemetry': [],
-            }
+            
+            self.result_dict = {
+                            'deviceName': self.__deviceName,
+                            'deviceType': self.__deviceType,
+                            'attributes': [],
+                            'telemetry': [],
+                        }
+
+            
+            #result = {
+            #    'deviceName': self.config.get('deviceName', 'ZktecDevice'),
+            #    'deviceType': self.config.get('deviceType', 'default'),
+            #    
+            #    'attributes': [],
+            #    'telemetry': [],
+            #}
             
             try:   
                 if not self.is_connected():
@@ -228,7 +243,7 @@ class ZktecPro(Connector, Thread):
 
                 # Send Attribute
                 device_attribute = self.send_attribute()
-                result['attributes'].append(device_attribute)
+                self.result_dict['attributes'].append(device_attribute)
                 
                 # Send Telemetry
                 for attendence in attendances:
@@ -236,7 +251,7 @@ class ZktecPro(Connector, Thread):
                     attendence.timestamp = self.timezone(attendence)
                     if attendence.punch == 1:
                             attendence.punch = 'in'
-                    elif attendence.punch == 4:
+                    elif attendence.punch == 2:
                         attendence.punch = 'out'
                 
                     
@@ -244,7 +259,7 @@ class ZktecPro(Connector, Thread):
                         
                         attendence_telemetry = self.send_telemetry(attendence)
                         
-                        result['telemetry'].append(attendence_telemetry)
+                        self.result_dict['telemetry'].append(attendence_telemetry)
                         lastdatetime = attendence.timestamp
                         with open(path, 'w') as f:
                             f.write(str(lastdatetime))
@@ -263,7 +278,7 @@ class ZktecPro(Connector, Thread):
                     
             except Exception as ex:
                 logging.error('ZKTec unsupported exception happend: %s', ex)
-                result['attributes'].append({"ZKTec Error" : True})
+                self.result_dict['attributes'].append({"ZKTec Error" : True})
                 
                 
                 traceback.print_exc()
@@ -276,7 +291,7 @@ class ZktecPro(Connector, Thread):
   
             finally:
                 # Send result to thingsboard
-                self.gateway.send_to_storage(self.get_name(), result)
+                self.gateway.send_to_storage(self.get_name(), self.result_dict)
                 sem.release()
                 time.sleep(1)    
         

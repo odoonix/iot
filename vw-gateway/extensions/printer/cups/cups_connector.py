@@ -14,7 +14,8 @@ import tempfile
 sem = threading.Semaphore(1)
 
 class CUPSPro(Connector, Thread): 
-
+    # TODO : IPPError, HTTPEttor, check try except
+    
     def __init__(self, gateway, config, connector_type):
         super().__init__()
         self.statistics = {'MessagesReceived': 0,
@@ -26,12 +27,21 @@ class CUPSPro(Connector, Thread):
         # Extract main sections from configuration ---------------------------------------------------------------------
         self.__prefix = config.get('prefix', 'prefix')
         self.__deviceName = config.get('deviceName', 'deviceName')
+        self.__deviceType = config.get('deviceType', 'default')
         
         # XXX: maso, 2023: rais error if prefix is not set
         # Set up lifecycle flags ---------------------------------------------------------------------------------------
         self.connection = False  # Service variable for check connection to device
         self.__logger = logging.getLogger("cups-"+self.__deviceName)
-
+        
+        # Create device
+        self.connection = cups.Connection()
+        self.printers = self.connection.getPrinters()
+                
+        for key, config in self.printers.items():
+            self.gateway.add_device(self.__prefix + key, {"connector": self},
+                                    device_type=self.__deviceType)
+ 
     def connect_device(self):
         """connects to the device throu tcp
         
@@ -40,6 +50,7 @@ class CUPSPro(Connector, Thread):
         try:
             self.connection = cups.Connection()
             self.printers = self.connection.getPrinters()
+                
         except (cups.IPPError) as e:
             pass
            
@@ -90,9 +101,10 @@ class CUPSPro(Connector, Thread):
         dict_jobs_counter["all_jobs"] = dict_count_job_all
         
         return dict_jobs_counter
-
+     
     # Main method of thread, must contain an infinite loop and all calls to data receiving/processing functions.
-    def run(self):
+    def run(self):   
+        
         while (True):
             try:
                 if not self.is_connected():
@@ -100,33 +112,41 @@ class CUPSPro(Connector, Thread):
                     
                 # Find jobs
                 dict_count_job_all = self.find_jobs() 
+                
                 for key, config in self.printers.items():
-                    result = {
+                    self.result_dict = {
                         'deviceName': self.__prefix + key,
-                        'deviceType': self.config.get('deviceType', 'default'),
+                        'deviceType': self.__deviceType,
                         'attributes': [],
                         'telemetry': [],
-                    } 
+                    }
+                
+                    #result = {
+                    #    'deviceName': self.__prefix + key,
+                    #    'deviceType': self.__deviceType,
+                    #    'attributes': [],
+                    #    'telemetry': [],
+                    #} 
                     
                     # Send attribute 
                     for attribute_key in ['printer-is-shared', 'printer-state', 'printer-state-message', 'printer-state-reasons', 'printer-type',
                                           'printer-uri-supported', 'printer-location', 'printer-info', 'device-uri', 'printer-make-and-model']:
-                        result['attributes'].append({
+                        self.result_dict['attributes'].append({
                             attribute_key: config[attribute_key]
                         })
                         
                     # Send telemetry
                     for key_counter , value_counter in dict_count_job_all.items():
-                        result['telemetry'].append({
+                        self.result_dict['telemetry'].append({
                         key_counter: value_counter[key]
                     })
 
                     # Send result to thingsboard
-                    self.gateway.send_to_storage(self.get_name(), result)
+                    self.gateway.send_to_storage(self.get_name(), self.result_dict)
     
             except:
                 logging.error("Printer Not Connected")
-                result['attributes'].append({"Printer Error" : True})
+                self.result_dict['attributes'].append({"Printer Error" : True})
             
             time.sleep(5)
     
@@ -189,7 +209,3 @@ class CUPSPro(Connector, Thread):
                 return self._server_side_rpc_handler(content, tries_count-1)
             raise ex
             
-
-#IPPError
-#HTTPEttor
-#try except

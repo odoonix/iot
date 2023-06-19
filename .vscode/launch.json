@@ -12,7 +12,7 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "args": [ ],
-            "cwd": "/home/sanaz/viraweb123/odoo-iot/vw-gateway/"
+            "cwd": "/home/sanaz/viraweb123/odoo-iot/vw-gateway"
         }
     ]
 }
