@@ -1,0 +1,17 @@
+{
+    "deviceName": "zktec_offic",
+    "deviceType": "attendance",
+    
+    "storage" :"../configs/json_files", 
+    "device": {
+        "name" : "zktec",
+        "ip": "192.168.88.101",
+        "port": "4370",
+        "password": "1",
+        "timezone": "210",
+
+        "configuration": {
+            "someNestedObject": {"key": "value"}
+         }
+    }
+}
