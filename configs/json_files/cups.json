@@ -1,6 +1,0 @@
-{
-    "deviceName": "cups_printer", 
-    "deviceType": "printer",
-    "prefix": "branch01 ", 
-    "storage": "/tmp"
-}
