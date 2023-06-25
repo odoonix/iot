@@ -5,7 +5,7 @@ import argparse
 import os.path
 from pyfiglet import Figlet
 
-TBModuleLoader.PATHS.append("./extensions")
+# "/home/sanaz/viraweb123/odoo-iot/vw-gateway/extensions"
 #
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -22,6 +22,13 @@ parser.add_argument("--config",
                     type=lambda x: is_valid_file(parser, x)
                     ) 
 
+parser.add_argument("--extension",
+                    help='Path To extensions folder',
+                    default = '.',
+                    required=True,
+                    type=lambda x: is_valid_file(parser, x)
+                    ) 
+
 parser.add_argument("--version",
                     help='The program version is 1.0.0',
                     ) 
@@ -30,12 +37,14 @@ args = parser.parse_args()
 
 f = Figlet(font='big')
 print (f.renderText('vira web 123')) 
+TBModuleLoader.PATHS.append(args.extension)
+
 TBGatewayService(args.config)
 
 
 #  viraweb123/odoo-iot/vw-gateway                  $ python main.py --config ../configs/conf.yaml    
 
-
+# python ../viraweb123/odoo-iot/vw-gateway/main.py --config ../tools/configs/conf.yaml --extension ../Videos/extensions
 
 #TBGatewayService('../configs/conf.yaml')
 
