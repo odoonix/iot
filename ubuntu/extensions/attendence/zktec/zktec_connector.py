@@ -375,12 +375,12 @@ class ZktecPro(Connector, Thread):
         if not self.connection:
             raise Exception("Device is not connected")
         
-        fingers = self.connection.get_templates()
-        for finger in fingers:
-            if finger.uid == int(params["user_id_change"]):
-                finger = self.connection.enroll_user(int(params["user_id_change"]))
-            else:
-                self.connection.enroll_user(int(params["user_id_change"]))
+        #fingers = self.connection.get_templates()
+        #for finger in fingers:
+        #    if finger.uid == int(params["user_id_change"]):
+        #        finger = self.connection.enroll_user(int(params["user_id_change"]))
+        #    else:
+        self.connection.enroll_user(int(params["user_id_change"]))
         
         #template = self.connection.get_user_template(uid=int(params["user_id_change"]), temp_id=0)
         

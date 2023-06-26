@@ -1,0 +1,7 @@
+version: '3.0'
+services:
+  gateway: 
+    build: .
+    volumes:
+      - ../configs:/app/configs/
+    # network_mode: "host" 
