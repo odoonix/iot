@@ -1,0 +1,17 @@
+{
+    "deviceName": "IstaBetonTacharFactoryzktecoffic",
+    "deviceType": "attendance",
+    
+    "storage" :".", 
+    "device": {
+        "name" : "zktec",
+        "ip": "192.168.88.109",
+        "port": "4370",
+        "password": "12",
+        "timezone": "210",
+
+        "configuration": {
+            "someNestedObject": {"key": "value"}
+         }
+    }
+}
