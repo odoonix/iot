@@ -1,8 +1,0 @@
-cryptography==40.0.2
-paho-mqtt==1.6.1
-protobuf==3.20.0
-pyfiglet==0.8.post1
-pytz==2023.3
-pyzk==0.9
-tb-mqtt-client==1.4.1
-thingsboard-gateway==3.2
