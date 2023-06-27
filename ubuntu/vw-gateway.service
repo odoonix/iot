@@ -5,7 +5,7 @@ After=multi-user.target
 [Service]
 Type=simple
 Restart=always
-ExecStart=/home/sanaz/viraweb123/test_gateway      
+ExecStart=/home/ista/bin/vw-gateway.sh
 
 [Install]
 WantedBy=multi-user.target
