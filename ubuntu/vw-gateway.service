@@ -5,7 +5,7 @@ After=multi-user.target
 [Service]
 Type=simple
 Restart=always
-ExecStart=/home/ista/bin/vw-gateway.sh
+ExecStart=/root/bin/vw-gateway.sh
 
 [Install]
 WantedBy=multi-user.target
