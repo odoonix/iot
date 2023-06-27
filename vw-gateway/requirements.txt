@@ -1,5 +1,5 @@
 py==1.11.0
-tb-mqtt-client==1.4.1
+tb-mqtt-client>=1.5
 prompt-toolkit==1.0.14
 pyzk==0.9
 pytz==2023.3
