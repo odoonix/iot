@@ -2,7 +2,7 @@ from zk import ZK, const
 
 conn = None
 # create ZK instance
-zk = ZK('192.168.1.105', port=4370, timeout=5, password=1925, force_udp=False, ommit_ping=False)
+zk = ZK('192.168.1.105', port=4370, timeout=5, password=192, force_udp=False, ommit_ping=False)
 try:
     # connect to device
     conn = zk.connect()
