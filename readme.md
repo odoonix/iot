@@ -21,6 +21,7 @@ The ViraWeb123 IoT box connects with your external devices like attendece,printe
 	mkdir .vw-gateway
 	mkdir git
 
+``` bash
 
 ${VW_HOME: /root}
 ├── git
@@ -46,28 +47,28 @@ ${VW_HOME: /root}
     │   ├── cups.json
     │   └── zktec.json
     └── statistics.json
-
+```
 
 
 ## Get codes
 
 - add device public key to github
 - clone the following project into the git directory.
-
+	```
 	cd ~/git
 	git clone git@github.com:viraweb123/odoo-iot.git --branch master
 	cd ..
-
+	```
 
 ## Manuall installation 
 
 - Install pre-requirenemnt based on your os
 - install package dependencies
-
+	```
 	cd ~/git/odoo-iot/vw-gateway
 	python3 -m pip install -r requirements.txt
 	cd ~
-	
+	```
 
 ### OpenSuse Thumbelweed Python 3.11:
 
@@ -131,13 +132,14 @@ ${VW_HOME: /root}
 
 - copy a template configuration
 
-
+```
 	cp ~/git/odoo-iot/ubuntu/configs/* ~/.vw-gateway/ -fR
 	cd ~/.vw-gateway
 	vi conf.yaml
+```
 	
 then update all device configuration
-
+```
 	mkdir -p ~/bin
 	cp ~/git/odoo-iot/ubuntu/vw-gateway.sh ~/bin
 	chmod +x ~/bin/vw-gateway.sh
@@ -146,3 +148,4 @@ then update all device configuration
 	systemctl status vw-gateway
 	systemctl enable vw-gateway
 	systemctl start vw-gateway
+```
