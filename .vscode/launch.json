@@ -11,7 +11,7 @@
             "program": "/home/sanaz/viraweb123/odoo-iot/vw-gateway/main.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": ["--config","../configs/conf.yaml"],
+            "args": ["--config","ubuntu/configs/conf.yaml", "--extension","./extensions"],
             "cwd": "/home/sanaz/viraweb123/odoo-iot/vw-gateway"
         }
     ]

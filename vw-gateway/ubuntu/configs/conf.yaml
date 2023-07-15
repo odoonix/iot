@@ -16,7 +16,7 @@ thingsboard:
     inactivityTimeoutSeconds: 5
     inactivityCheckPeriodSeconds: 10
   security:
-    accessToken: jTAmYdsfO06Pq3a3QE0F
+    accessToken: ekrqrd52PhGSHskbj8qcrqAF5Pb7881
   qos: 1
 storage:
   type: memory
@@ -42,10 +42,10 @@ grpc:
   minPingIntervalWithoutDataMs: 5000
 connectors:
   
-   -
-    name: zktec #name - connector name
+ -
+    name: ZKTec Factory #name - connector name
     type: attendence/zktec #type - folder name in extensions, with connector file configuration 
-    configuration: json_files/zktec.json
+    configuration: json_files/ZKTec_Factory.json
     class: ZktecPro
 
   # -
@@ -59,8 +59,6 @@ connectors:
    # type: mqtt
    # configuration: mqtt.json
     
-
-
 #  -
 #    name: Custom Serial Connector
 #    type: serial
