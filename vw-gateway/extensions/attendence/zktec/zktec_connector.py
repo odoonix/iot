@@ -19,6 +19,8 @@ sem = threading.Semaphore(1)
 
 MASCK_MAX = 62
 MASCK_MIN = 1
+PACKET_SAVE ={'attributes': [],
+                'telemetry': []}
 
 
 def _check_magic_number(magic_number):
@@ -51,7 +53,10 @@ def convert_to_company_id(magic_number, user_id_device):
     _check_magic_number(magic_number)
     return (magic_number << 9) ^ user_id_device
 
-
+def equal_packet(packet_send, packet_save):
+    if len(packet_send["telemetry"]) == 0 and packet_save["attributes"] == packet_send["attributes"]:
+        return True
+                
 class ZktecPro(Connector, Thread):
 
     def __init__(self, gateway, config, connector_type):
@@ -116,10 +121,10 @@ class ZktecPro(Connector, Thread):
     def is_connected(self):
         return self.connection and self.connection.is_connect
 
-    def timezone(self, attendence):
+    def timezone(self, attendance):
         tz = pytz.FixedOffset(int(self._timezone))
 
-        datetimeOrg = attendence.timestamp
+        datetimeOrg = attendance.timestamp
         dateTimeUts = datetime(
             datetimeOrg.year,
             datetimeOrg.month,
@@ -129,9 +134,9 @@ class ZktecPro(Connector, Thread):
             datetimeOrg.second,
             tzinfo=tz
         )
-        attendence.timestamp = datetime.fromtimestamp(
+        attendance.timestamp = datetime.fromtimestamp(
             datetime.timestamp(dateTimeUts))
-        return attendence.timestamp
+        return attendance.timestamp
 
     def get_storage_path(self):
 
@@ -239,19 +244,19 @@ class ZktecPro(Connector, Thread):
 
         return (device_attribute)
 
-    def send_telemetry(self, attendence):
-        attendence_telemetry = {
-            "ts": attendence.timestamp.timestamp()*1000,
+    def send_telemetry(self, attendance):
+        attendance_telemetry = {
+            "ts": attendance.timestamp.timestamp()*1000,
             "values": {
                 "user_id": convert_to_company_id(
-                    user_id_device=int(attendence.user_id),
+                    user_id_device=int(attendance.user_id),
                     magic_number=self._magic_number),
-                "timestamp": str(attendence.timestamp),
-                "punch": attendence.punch,
+                "timestamp": str(attendance.timestamp),
+                "punch": attendance.punch,
                 "device_name": self.__deviceName
             }
         }
-        return attendence_telemetry
+        return attendance_telemetry
     # Main method of thread, must contain an infinite loop and all calls to data receiving/processing functions.
 
     def run(self):
@@ -265,6 +270,7 @@ class ZktecPro(Connector, Thread):
                 'deviceType': self.__deviceType,
                 'attributes': [],
                 'telemetry': [],
+                
             }
 
             try:
@@ -279,22 +285,18 @@ class ZktecPro(Connector, Thread):
                 self.result_dict['attributes'].append(device_attribute)
 
                 # Send Telemetry
-                for attendence in attendances:
+                for attendance in attendances:
                     # Change key telemetry
-                    attendence.timestamp = self.timezone(attendence)
-                    if attendence.punch == 1:
-                        attendence.punch = 'in'
-                    elif attendence.punch == 2:
-                        attendence.punch = 'out'
-
-                    if attendence.timestamp > lastdatetime:
-                        attendence_telemetry = self.send_telemetry(attendence)
+                    attendance.timestamp = self.timezone(attendance)
+                        
+                    if attendance.timestamp > lastdatetime:
+                        if attendance.punch == 1:
+                            attendance.punch = 'in'
+                        elif attendance.punch == 2:
+                            attendance.punch = 'out'
+                        attendance_telemetry = self.send_telemetry(attendance)
                         self.result_dict['telemetry'].append(
-                            attendence_telemetry)
-
-                        lastdatetime = attendence.timestamp
-                        with open(path, 'w') as f:
-                            f.write(str(lastdatetime))
+                            attendance_telemetry)
 
             except Exception as ex:
                 logging.error('ZKTec unsupported exception happend: %s', ex)
@@ -309,9 +311,18 @@ class ZktecPro(Connector, Thread):
 
             finally:
                 # Send result to thingsboard
-                # if self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS:
-                self.gateway.send_to_storage(self.get_name(), self.result_dict)
-
+                # Check telemetry is empty and Repetitive attributes
+                
+                if equal_packet(self.result_dict,PACKET_SAVE):
+                    pass
+                        # Check Successful Send
+                elif self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
+                    lastdatetime = attendance.timestamp
+                    with open(path, 'w') as f:
+                        f.write(str(lastdatetime))
+                                
+                    PACKET_SAVE["attributes"] = self.result_dict["attributes"]
+                    
                 sem.release()
                 time.sleep(30)
 
