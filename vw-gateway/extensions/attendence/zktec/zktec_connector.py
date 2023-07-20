@@ -14,6 +14,7 @@ import logging
 from simplejson import dumps
 import threading
 import signal
+import sys
 
 sem = threading.Semaphore(1)
 
@@ -21,6 +22,7 @@ MASCK_MAX = 62
 MASCK_MIN = 1
 PACKET_SAVE ={'attributes': [],
                 'telemetry': []}
+
 
 
 def _check_magic_number(magic_number):
@@ -69,7 +71,7 @@ class ZktecPro(Connector, Thread):
 
         # Extract main sections from configuration ---------------------------------------------------------------------
         self.__device = config.get('device')
-        self.__storage_path = config.get('storage')
+        self.__storage_path = config.get('storage',".")
         self._name = self.__device.get('name', 'zktec')
         self._ip = self.__device.get('ip', '127.0.0.1')
         self._port = self.__device.get('port', "1883")
@@ -137,7 +139,7 @@ class ZktecPro(Connector, Thread):
         attendance.timestamp = datetime.fromtimestamp(
             datetime.timestamp(dateTimeUts))
         return attendance.timestamp
-
+ 
     def get_storage_path(self):
 
         path_storage = Path(self.__storage_path + '/%s.txt' %
@@ -269,8 +271,7 @@ class ZktecPro(Connector, Thread):
                 'deviceName': self.__deviceName,
                 'deviceType': self.__deviceType,
                 'attributes': [],
-                'telemetry': [],
-                
+                'telemetry': [], 
             }
 
             try:
@@ -288,8 +289,9 @@ class ZktecPro(Connector, Thread):
                 for attendance in attendances:
                     # Change key telemetry
                     attendance.timestamp = self.timezone(attendance)
-                        
-                    if attendance.timestamp > lastdatetime:
+                    
+                    
+                    if attendance.timestamp > lastdatetime and is_device_id(self._magic_number,attendance.user_id):
                         if attendance.punch == 1:
                             attendance.punch = 'in'
                         elif attendance.punch == 2:
@@ -315,7 +317,8 @@ class ZktecPro(Connector, Thread):
                 
                 if equal_packet(self.result_dict,PACKET_SAVE):
                     pass
-                        # Check Successful Send
+                
+                # Check Successful Send
                 elif self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
                     lastdatetime = attendance.timestamp
                     with open(path, 'w') as f:

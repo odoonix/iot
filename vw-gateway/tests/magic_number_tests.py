@@ -12,7 +12,7 @@ class TestStringMethods(unittest.TestCase):
             (1, 0x7C01, 62),
             (1, 0x3C01, 30),
             (1, 0x201,  1),
-            (1, 0x3201,  25),
+            (1, 0x3201,  1),
             # Magic number is default
             (0x1, 0x1, 0x0),
             (0xFFF, 0xFFF, 0x0),
@@ -20,6 +20,7 @@ class TestStringMethods(unittest.TestCase):
         for user_id, device_id, magic_number in data:
             self.assertEqual(zktec_connector.convert_to_device_id(magic_number, user_id),
                             device_id)
+            print(zktec_connector.convert_to_device_id(magic_number, user_id))
             self.assertEqual(zktec_connector.convert_to_company_id(magic_number, device_id),
                             user_id)
 

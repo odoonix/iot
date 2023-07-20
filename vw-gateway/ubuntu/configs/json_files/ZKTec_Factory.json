@@ -10,6 +10,7 @@
         "password": "1",
         "timezone": "210",
         "magic_number": 0,
+        
 
         "configuration": {
             "someNestedObject": {"key": "value"}
