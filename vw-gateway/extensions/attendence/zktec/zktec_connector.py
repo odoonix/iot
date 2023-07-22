@@ -286,6 +286,7 @@ class ZktecPro(Connector, Thread):
                 self.result_dict['attributes'].append(device_attribute)
 
                 # Send Telemetry
+                attendance=False
                 for attendance in attendances:
                     # Change key telemetry
                     attendance.timestamp = self.timezone(attendance)
@@ -299,7 +300,20 @@ class ZktecPro(Connector, Thread):
                         attendance_telemetry = self.send_telemetry(attendance)
                         self.result_dict['telemetry'].append(
                             attendance_telemetry)
-
+                # Send result to thingsboard
+                # Check telemetry is empty and Repetitive attributes
+                
+                if equal_packet(self.result_dict,PACKET_SAVE):
+                    pass
+                
+                # Check Successful Send
+                elif self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
+                    if attendance:
+                        lastdatetime = attendance.timestamp
+                        with open(path, 'w') as f:
+                            f.write(str(lastdatetime))
+                                
+                    PACKET_SAVE["attributes"] = self.result_dict["attributes"]
             except Exception as ex:
                 logging.error('ZKTec unsupported exception happend: %s', ex)
                 self.result_dict['attributes'].append({"ZKTec Error": True})
@@ -312,19 +326,7 @@ class ZktecPro(Connector, Thread):
                     pass
 
             finally:
-                # Send result to thingsboard
-                # Check telemetry is empty and Repetitive attributes
                 
-                if equal_packet(self.result_dict,PACKET_SAVE):
-                    pass
-                
-                # Check Successful Send
-                elif self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
-                    lastdatetime = attendance.timestamp
-                    with open(path, 'w') as f:
-                        f.write(str(lastdatetime))
-                                
-                    PACKET_SAVE["attributes"] = self.result_dict["attributes"]
                     
                 sem.release()
                 time.sleep(30)

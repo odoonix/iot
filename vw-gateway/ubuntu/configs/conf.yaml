@@ -16,7 +16,7 @@ thingsboard:
     inactivityTimeoutSeconds: 5
     inactivityCheckPeriodSeconds: 10
   security:
-    accessToken: ekrqrd52PhGSHskbj8qcrqAF5Pb7881
+    accessToken: jTAmYdsfO06Pq3a3QE0F
   qos: 1
 storage:
   type: memory
