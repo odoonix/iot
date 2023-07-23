@@ -1,8 +1,11 @@
 from zk import ZK, const
 
+_ip = input('Enter your ip:')
+_password = input('Enter your password:')
+
 conn = None
 # create ZK instance
-zk = ZK('192.168.1.109', port=4370, timeout=5, password=8984, force_udp=False, ommit_ping=False)
+zk = ZK(str(_ip), port=4370, timeout=5, password=int(_password), force_udp=False, ommit_ping=False)
 try:
     # connect to device
     conn = zk.connect()
