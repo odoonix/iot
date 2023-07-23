@@ -92,6 +92,9 @@ class ZktecPro(Connector, Thread):
 
         log.info("Starting Custom connector")
 
+    def get_config(self):
+        return self.config
+    
     def connect_device(self):
         """connects to the device throu tcp
 
