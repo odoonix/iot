@@ -38,7 +38,7 @@ def _check_user_id_company(user_id_company):
 
 
 def is_device_id(magic_number, user_id_device):
-    return (user_id_device >> 9) != magic_number
+    return (int(user_id_device) >> 9) != magic_number
 
 
 def convert_to_device_id(magic_number, user_id_company):
@@ -50,6 +50,7 @@ def convert_to_device_id(magic_number, user_id_company):
 
 
 def convert_to_company_id(magic_number, user_id_device):
+    user_id_device = int(user_id_device)
     if magic_number == 0x0:
         return user_id_device
     _check_magic_number(magic_number)
