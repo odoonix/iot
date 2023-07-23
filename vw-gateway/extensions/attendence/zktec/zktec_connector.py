@@ -105,7 +105,7 @@ class ZktecPro(Connector, Thread):
             timeout=5,
             password=int(self._password),
             force_udp=False,
-            ommit_ping=False,
+            ommit_ping=True,
             verbose=False,
             encoding="cp1256"
 
