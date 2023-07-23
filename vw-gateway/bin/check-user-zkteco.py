@@ -1,7 +1,13 @@
 from zk import ZK, const
 
-_ip = input('Enter your ip:')
-_password = input('Enter your password:')
+try:
+    _ip = input('Enter your ip:')
+    _password = input('Enter your password:')
+except EOFError as e:
+    print(e)
+    
+
+
 
 conn = None
 # create ZK instance
