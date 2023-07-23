@@ -12,7 +12,7 @@ logging.debug("Password %s from input", _password)
     
 conn = None
 logging.debug("create ZK instance")
-zk = ZK(str(_ip), port=4370, timeout=5, password=int(_password), force_udp=False, ommit_ping=False)
+zk = ZK(str(_ip), port=4370, timeout=5, password=int(_password), force_udp=False, ommit_ping=True)
 
 try:
     logging.debug("Connect to device")
@@ -21,8 +21,8 @@ try:
     conn.disable_device()
     # another commands will be here!
     # Example: Get All Users
-    users = conn.get_users()
-    print(users)
+    attendances = conn.get_attendance()
+    print(attendances)
     
 except Exception as e:
     logging.error("Fail to get attendences", exc_info=True)
