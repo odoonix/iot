@@ -56,8 +56,8 @@ def convert_to_company_id(magic_number, user_id_device):
     _check_magic_number(magic_number)
     return (magic_number << 9) ^ user_id_device
 
-def not_equal_packet(packet_send, packet_save):
-    if len(packet_send["telemetry"]) != 0 and packet_save["attributes"] != packet_send["attributes"]:
+def equal_packet(packet_send, packet_save):
+    if len(packet_send["telemetry"]) == 0 and packet_save["attributes"] == packet_send["attributes"]:
         return True
                 
 class ZktecPro(Connector, Thread):
@@ -306,16 +306,18 @@ class ZktecPro(Connector, Thread):
                             attendance_telemetry)
                 # Send result to thingsboard
                 # Check telemetry is empty and Repetitive attributes
-                if attendance:
-                    if not_equal_packet(self.result_dict,PACKET_SAVE):
-                    # Check Successful Send
-                        if self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
-                            lastdatetime = attendance.timestamp
-                            with open(path, 'w') as f:
-                                f.write(str(lastdatetime))
-                                    
-                            PACKET_SAVE["attributes"] = self.result_dict["attributes"]
-                            
+                
+                if equal_packet(self.result_dict,PACKET_SAVE):
+                    pass
+                
+                # Check Successful Send
+                elif self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
+                    if attendance:
+                        lastdatetime = attendance.timestamp
+                        with open(path, 'w') as f:
+                            f.write(str(lastdatetime))
+                                
+                    PACKET_SAVE["attributes"] = self.result_dict["attributes"]
             except Exception as ex:
                 logging.error('ZKTec unsupported exception happend: %s', ex)
                 self.result_dict['attributes'].append({"ZKTec Error": True})
