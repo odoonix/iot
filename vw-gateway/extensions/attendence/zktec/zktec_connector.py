@@ -255,8 +255,9 @@ class ZktecPro(Connector, Thread):
             "ts": attendance.timestamp.timestamp()*1000,
             "values": {
                 "user_id": convert_to_company_id(
-                    user_id_device=int(attendance.user_id),
-                    magic_number=self._magic_number),
+                    magic_number=self._magic_number,
+                    user_id_device=int(attendance.user_id)
+                    ),
                 "timestamp": str(attendance.timestamp),
                 "punch": attendance.punch,
                 "device_name": self.__deviceName
@@ -295,7 +296,6 @@ class ZktecPro(Connector, Thread):
                     # Change key telemetry
                     attendance.timestamp = self.timezone(attendance)
                     
-                    
                     if attendance.timestamp > lastdatetime and is_device_id(self._magic_number,attendance.user_id):
                         if attendance.punch == 1:
                             attendance.punch = 'in'
@@ -330,8 +330,7 @@ class ZktecPro(Connector, Thread):
                     pass
 
             finally:
-                
-                    
+                   
                 sem.release()
                 time.sleep(30)
 
