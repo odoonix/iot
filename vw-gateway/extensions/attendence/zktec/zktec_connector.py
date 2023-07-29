@@ -38,6 +38,8 @@ def _check_user_id_company(user_id_company):
 
 
 def is_device_id(magic_number, user_id_device):
+    if magic_number == 0x0:
+        return True 
     return (int(user_id_device) >> 9) == magic_number
 
 
