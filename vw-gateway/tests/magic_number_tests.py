@@ -22,7 +22,6 @@ class TestStringMethods(unittest.TestCase):
                             device_id)
             self.assertEqual(zktec_connector.convert_to_company_id(magic_number, device_id),
                             user_id)
-
     def test_convert_to_device_id_invalid(self):
         ids = [
             2500,
