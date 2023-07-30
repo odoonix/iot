@@ -3,7 +3,7 @@ import os
 from threading import Thread
 import traceback
 from thingsboard_gateway.connectors.connector import Connector, log
-from thingsboard_gateway.gateway.constant_enums import DownlinkMessageType, Status
+#from thingsboard_gateway.gateway.constant_enums import DownlinkMessageType, Status
 from pathlib import Path
 from zk import ZK, const
 from zk.exception import ZKErrorResponse, ZKNetworkError
@@ -313,7 +313,7 @@ class ZktecPro(Connector, Thread):
                     pass
                 
                 # Check Successful Send
-                elif self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
+                elif self.gateway.send_to_storage(self.get_name(), self.result_dict) == 3: 
                     if attendance:
                         lastdatetime = attendance.timestamp
                         with open(path, 'w') as f:
