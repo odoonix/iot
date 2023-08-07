@@ -323,15 +323,15 @@ class ZktecPro(Connector, Thread):
                         
                 # Send result to thingsboard
                 # Check Successful Send
-                if not_equal_packet(self.result_dict,PACKET_SAVE): 
-                    if self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
-                        if attendance:
-                            if validate_telemetry(ATTENDANCE_TELEMETRY_SCHEMA, attendance_telemetry):
+                if attendance:
+                    if not_equal_packet(self.result_dict,PACKET_SAVE): 
+                        if validate_telemetry(ATTENDANCE_TELEMETRY_SCHEMA, attendance_telemetry):
+                            if self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
                                 lastdatetime = attendance.timestamp
                                 with open(path, 'w') as f:
                                     f.write(str(lastdatetime))        
                                 PACKET_SAVE["attributes"] = self.result_dict["attributes"]
-                                
+                                    
             except Exception as ex:
                 logging.error('ZKTec unsupported exception happend: %s', ex)
                 
