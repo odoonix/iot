@@ -63,9 +63,9 @@ ATTENDANCE_TELEMETRY_SCHEMA = Schema({
     "ts": And(int),
     "values": {
         "user_id": And(int),
-        "timestamp":  And(str, len),
-        "punch": And(str, len),
-        "device_name":  And(str, len),
+        "timestamp":  And(str),
+        "punch": And(str),
+        "device_name":  And(str),
     }
 })
 
