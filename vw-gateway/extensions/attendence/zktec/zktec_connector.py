@@ -15,6 +15,7 @@ from simplejson import dumps
 import threading
 import signal
 import sys
+from schema import Schema, And, Use, Optional, SchemaError
 
 sem = threading.Semaphore(1)
 
@@ -24,24 +25,20 @@ PACKET_SAVE ={'attributes': [],
                 'telemetry': []}
 
 
-
 def _check_magic_number(magic_number):
     if (magic_number > MASCK_MAX or magic_number < 0):
         raise Exception(
             'Magic number must bigger than {} and smaller than {}'.format(MASCK_MIN, MASCK_MAX))
-
 
 def _check_user_id_company(user_id_company):
     if (user_id_company >= (MASCK_MIN << 9)):
         raise Exception(
             'Uaser ID from company must be bigger than 1 and smaller than {}'.format(MASCK_MIN))
 
-
 def is_device_id(magic_number, user_id_device):
     if magic_number == 0x0:
         return True 
     return (int(user_id_device) >> 9) == magic_number
-
 
 def convert_to_device_id(magic_number, user_id_company):
     if magic_number == 0x0:
@@ -50,7 +47,6 @@ def convert_to_device_id(magic_number, user_id_company):
     _check_user_id_company(user_id_company)
     return (magic_number << 9) | user_id_company
 
-
 def convert_to_company_id(magic_number, user_id_device):
     user_id_device = int(user_id_device)
     if magic_number == 0x0:
@@ -58,10 +54,28 @@ def convert_to_company_id(magic_number, user_id_device):
     _check_magic_number(magic_number)
     return (magic_number << 9) ^ user_id_device
 
-def equal_packet(packet_send, packet_save):
-    if len(packet_send["telemetry"]) == 0 and packet_save["attributes"] == packet_send["attributes"]:
+def not_equal_packet(packet_send, packet_save):
+    if len(packet_send["telemetry"]) != 0 or packet_save["attributes"] != packet_send["attributes"]:
         return True
-                
+
+
+ATTENDANCE_TELEMETRY_SCHEMA = Schema({
+    "ts": And(int),
+    "values": {
+        "user_id": And(int),
+        "timestamp":  And(str, len),
+        "punch": And(str, len),
+        "device_name":  And(str, len),
+    }
+})
+
+def validate_telemetry(attendance_telemetry_schema, attendance_telemetry_send):
+    try:
+        attendance_telemetry_schema.validate(attendance_telemetry_send)
+        return True
+    except SchemaError:
+        return False
+              
 class ZktecPro(Connector, Thread):
 
     def __init__(self, gateway, config, connector_type):
@@ -306,23 +320,21 @@ class ZktecPro(Connector, Thread):
                         attendance_telemetry = self.send_telemetry(attendance)
                         self.result_dict['telemetry'].append(
                             attendance_telemetry)
+                        
                 # Send result to thingsboard
-                # Check telemetry is empty and Repetitive attributes
-                
-                if equal_packet(self.result_dict,PACKET_SAVE):
-                    pass
-                
                 # Check Successful Send
-                elif self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
-                    if attendance:
-                        lastdatetime = attendance.timestamp
-                        with open(path, 'w') as f:
-                            f.write(str(lastdatetime))
+                if not_equal_packet(self.result_dict,PACKET_SAVE): 
+                    if self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
+                        if attendance:
+                            if validate_telemetry(ATTENDANCE_TELEMETRY_SCHEMA, attendance_telemetry):
+                                lastdatetime = attendance.timestamp
+                                with open(path, 'w') as f:
+                                    f.write(str(lastdatetime))        
+                                PACKET_SAVE["attributes"] = self.result_dict["attributes"]
                                 
-                    PACKET_SAVE["attributes"] = self.result_dict["attributes"]
             except Exception as ex:
                 logging.error('ZKTec unsupported exception happend: %s', ex)
-                self.result_dict['attributes'].append({"ZKTec Error": True})
+                
 
                 traceback.print_exc()
                 # Note: for network connection

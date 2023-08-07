@@ -45,7 +45,7 @@ connectors:
  -
     name: ZKTec Factory #name - connector name
     type: attendence/zktec #type - folder name in extensions, with connector file configuration 
-    configuration: json_files/ZKTec_Factory.json
+    configuration: json_files/zktec.json
     class: ZktecPro
 
   # -
