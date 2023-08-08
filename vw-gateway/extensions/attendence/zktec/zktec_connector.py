@@ -15,6 +15,7 @@ from simplejson import dumps
 import threading
 import signal
 import sys
+from schema import Schema, And, Use, Optional, SchemaError
 
 sem = threading.Semaphore(1)
 
@@ -58,6 +59,22 @@ def not_equal_packet(packet_send, packet_save):
         return True
 
 
+ATTENDANCE_TELEMETRY_SCHEMA = Schema({
+    "ts": And(int),
+    "values": {
+        "user_id": And(int),
+        "timestamp":  And(str, len),
+        "punch": And(str, len),
+        "device_name":  And(str, len),
+    }
+})
+
+def validate_telemetry(attendance_telemetry_schema, attendance_telemetry_send):
+    try:
+        attendance_telemetry_schema.validate(attendance_telemetry_send)
+        return True
+    except SchemaError:
+        return False
               
 class ZktecPro(Connector, Thread):
 
@@ -308,6 +325,7 @@ class ZktecPro(Connector, Thread):
                 # Check Successful Send
                 if attendance:
                     if not_equal_packet(self.result_dict,PACKET_SAVE): 
+                        if validate_telemetry(ATTENDANCE_TELEMETRY_SCHEMA, attendance_telemetry):
                             if self.gateway.send_to_storage(self.get_name(), self.result_dict) == Status.SUCCESS: 
                                 lastdatetime = attendance.timestamp
                                 with open(path, 'w') as f:
