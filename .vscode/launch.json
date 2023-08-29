@@ -13,6 +13,14 @@
             "justMyCode": false,
             "args": ["--config","ubuntu/configs/conf.yaml", "--extension","./extensions"],
             "cwd": "/home/sanaz/viraweb123/odoo-iot/vw-gateway"
+        },{
+            "name": "Test",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/sanaz/viraweb123/odoo-iot/vw-gateway/tests/magic_number_tests.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "cwd": "/home/sanaz/viraweb123/odoo-iot/vw-gateway"
         }
     ]
 }
