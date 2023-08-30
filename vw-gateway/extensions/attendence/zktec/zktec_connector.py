@@ -15,7 +15,7 @@ from simplejson import dumps
 import threading
 import signal
 import sys
-from schema import Schema, And, Use, Optional, SchemaError
+from schema import Schema, And, Use, Optional, SchemaError, Or
 from functools import reduce
 
 sem = threading.Semaphore(1)
@@ -69,7 +69,7 @@ ATTENDANCE_TELEMETRY_SCHEMA = Schema({
         'Device_name': str
     }],
     Optional('telemetry'):[{
-        "ts": And(int),
+        "ts": Or(int, float),
         "values": {
             "user_id": And(int),
             "timestamp":  And(str, len),
@@ -224,7 +224,9 @@ class ZktecPro(Connector, Thread):
     
         try:
             ATTENDANCE_TELEMETRY_SCHEMA.validate(result_dict)
-        except SchemaError:
+        except SchemaError as ex:
+            self.__logger.error("ZKTec unsupported exception happend %s", ex)
+            traceback.print_exc()
             return False
         
         return True
@@ -258,6 +260,8 @@ class ZktecPro(Connector, Thread):
             attendance.punch = 'in'
         elif attendance.punch == 2:
             attendance.punch = 'out'
+        else:
+            attendance.punch = 'in'
         attendance_telemetry = {
             "ts": attendance.timestamp.timestamp()*1000,
             "values": {
@@ -556,9 +560,9 @@ class ZktecPro(Connector, Thread):
             if latest['ts'] == 0:
                 return True
             path = self.get_storage_path()
-            if not os.path.exists(os.path.dirname(path)):
+            if not os.path.exists(os.path.dirname(path.absolute())):
                 try:
-                    os.makedirs(os.path.dirname(path))
+                    os.makedirs(os.path.dirname(path.absolute()))
                 except OSError as exc: # Guard against race condition
                     raise
             with open(path, 'w') as f:
