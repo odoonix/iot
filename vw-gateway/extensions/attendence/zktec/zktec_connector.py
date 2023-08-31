@@ -153,7 +153,7 @@ class ZktecPro(Connector, Thread):
 
         # Send Telemetry
         attendances = self._zkteco_get_attendance()
-        for attendance in attendances:
+        for attendance in attendances[:10]:
             if self._should_send_attendance(attendance):
                 result_dict['telemetry'].append(self._convert_attendance_to_telemetry(attendance))
 
@@ -233,9 +233,9 @@ class ZktecPro(Connector, Thread):
     
     def _should_send_attendance(self, attendance):
         lastdatetime = self.lastdatetime_text_file()
-        timestamp_value = self.timezone(attendance)
+        self.timezone(attendance)
         # TODO: maso, 2023: check last time stamp
-        return attendance.timestamp > lastdatetime and is_device_id(self._magic_number, attendance.user_id)
+        return datetime.timestamp(attendance.timestamp) > lastdatetime and is_device_id(self._magic_number, attendance.user_id)
 
     def timezone(self, attendance):
         tz = pytz.FixedOffset(int(self._timezone))
@@ -566,7 +566,7 @@ class ZktecPro(Connector, Thread):
                 except OSError as exc: # Guard against race condition
                     raise
             with open(path, 'w') as f:
-                f.write(str(latest['values']['timestamp']))
+                f.write(str(latest['ts']))
             return True
         return False
             
@@ -576,7 +576,6 @@ class ZktecPro(Connector, Thread):
         try:
             with open(self.get_storage_path(), 'r') as f:
                 lines = f.readlines()
-                return datetime.strptime(lines[0], '%Y-%m-%d %H:%M:%S')
+                return float(lines[0])
         except:
-            return datetime.strptime(
-                '1990-10-5 00:00:00', '%Y-%m-%d %H:%M:%S')
+            return 0

@@ -57,6 +57,7 @@ class TestStringMethods(unittest.TestCase):
 
         device.get = MagicMock(return_value='1')
         gateway.send_to_storage = MagicMock(return_value=Status.SUCCESS)
+        gateway.add_device = MagicMock(return_value=True)
 
         def side_effect_func(val, *args, **kwargs):
             if val == 'device':
@@ -97,7 +98,7 @@ class TestStringMethods(unittest.TestCase):
         connction._send_to_storage(result_dict)
         self.assertTrue(path.is_file())
         
-        self.assertEqual(datetime.strptime("2023-10-4 10:03:00", '%Y-%m-%d %H:%M:%S'), connction.lastdatetime_text_file())
+        self.assertEqual(3, connction.lastdatetime_text_file())
         path.unlink(missing_ok=True)
         
     def test_lastdatetime_text_file(self):
@@ -108,6 +109,7 @@ class TestStringMethods(unittest.TestCase):
 
         device.get = MagicMock(return_value='1')
         gateway.send_to_storage = MagicMock(return_value=Status.SUCCESS)
+        gateway.add_device = MagicMock(return_value=True)
 
         def side_effect_func(val, *args, **kwargs):
             if val == 'device':
@@ -120,7 +122,7 @@ class TestStringMethods(unittest.TestCase):
         
         path = connction.get_storage_path()
         path.unlink(missing_ok=True)
-        self.assertEqual(datetime.strptime('1990-10-5 00:00:00', '%Y-%m-%d %H:%M:%S'), connction.lastdatetime_text_file())
+        self.assertEqual(0, connction.lastdatetime_text_file())
         path.unlink(missing_ok=True)
         
 
@@ -133,6 +135,7 @@ class TestStringMethods(unittest.TestCase):
 
         device.get = MagicMock(return_value='1')
         gateway.send_to_storage = MagicMock(return_value=Status.SUCCESS)
+        gateway.add_device = MagicMock(return_value=True)
 
         def side_effect_func(val, *args, **kwargs):
             if val == 'device':
@@ -185,6 +188,7 @@ class TestStringMethods(unittest.TestCase):
 
         device.get = MagicMock(return_value='1')
         gateway.send_to_storage = MagicMock(return_value=Status.SUCCESS)
+        gateway.add_device = MagicMock(return_value=Status.SUCCESS)
 
         def side_effect_func(val, *args, **kwargs):
             if val == 'device':
