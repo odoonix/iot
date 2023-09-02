@@ -153,7 +153,7 @@ class ZktecPro(Connector, Thread):
 
         # Send Telemetry
         attendances = self._zkteco_get_attendance()
-        for attendance in attendances[:10]:
+        for attendance in attendances[]:
             if self._should_send_attendance(attendance):
                 result_dict['telemetry'].append(self._convert_attendance_to_telemetry(attendance))
 
