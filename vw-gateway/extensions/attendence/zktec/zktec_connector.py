@@ -157,6 +157,8 @@ class ZktecPro(Connector, Thread):
             self._remove_timezone(attendance)
             if self._should_send_attendance(attendance):
                 result_dict['telemetry'].append(self._convert_attendance_to_telemetry(attendance))
+            if len(result_dict['telemetry']) > 10:
+                break
 
         # Send result to thingsboard
         if self._must_send_to_storage(result_dict) and self._send_to_storage(result_dict):
