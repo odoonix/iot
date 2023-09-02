@@ -154,6 +154,7 @@ class ZktecPro(Connector, Thread):
         # Send Telemetry
         attendances = self._zkteco_get_attendance()
         for attendance in attendances:
+            self._remove_timezone(attendance)
             if self._should_send_attendance(attendance):
                 result_dict['telemetry'].append(self._convert_attendance_to_telemetry(attendance))
 
@@ -233,11 +234,10 @@ class ZktecPro(Connector, Thread):
     
     def _should_send_attendance(self, attendance):
         lastdatetime = self.lastdatetime_text_file()
-        self.timezone(attendance)
         # TODO: maso, 2023: check last time stamp
         return datetime.timestamp(attendance.timestamp) > lastdatetime and is_device_id(self._magic_number, attendance.user_id)
 
-    def timezone(self, attendance):
+    def _remove_timezone(self, attendance):
         tz = pytz.FixedOffset(int(self._timezone))
 
         datetimeOrg = attendance.timestamp
@@ -255,13 +255,6 @@ class ZktecPro(Connector, Thread):
         return attendance.timestamp
 
     def _convert_attendance_to_telemetry(self, attendance):
-        attendance.timestamp = self.timezone(attendance)
-        if attendance.punch == 1:
-            attendance.punch = 'in'
-        elif attendance.punch == 2:
-            attendance.punch = 'out'
-        else:
-            attendance.punch = 'in'
         attendance_telemetry = {
             "ts": attendance.timestamp.timestamp()*1000,
             "values": {
@@ -270,7 +263,7 @@ class ZktecPro(Connector, Thread):
                     user_id_device=int(attendance.user_id)
                 ),
                 "timestamp": str(attendance.timestamp),
-                "punch": attendance.punch,
+                "punch": 'out' if attendance.punch == 2 else 'in',
                 "device_name": self.__deviceName
             }
         }

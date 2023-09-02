@@ -7,8 +7,7 @@ from datetime import datetime
 
 from zk import attendance
 
-sys.path.append(os.path.abspath(
-    '/home/sanaz/viraweb123/odoo-iot/vw-gateway/extensions/attendence/zktec'))
+sys.path.append(os.path.abspath('/home/sanaz/viraweb123/odoo-iot/vw-gateway/extensions/attendence/zktec'))
 import zktec_connector
 
 class Object(object):
@@ -174,10 +173,10 @@ class TestStringMethods(unittest.TestCase):
         connction._zkteco_get_attendance = MagicMock(return_value=[])
         
         connction._run()
-        self.assertEquals(gateway.send_to_storage.call_count, 1)
+        self.assertEqual(gateway.send_to_storage.call_count, 1)
         
         connction._run()
-        self.assertEquals(gateway.send_to_storage.call_count, 1)
+        self.assertEqual(gateway.send_to_storage.call_count, 1)
 
      
     def test_run_single_with_telemetry(self):
@@ -232,10 +231,10 @@ class TestStringMethods(unittest.TestCase):
         ])
         
         connction._run()
-        self.assertEquals(gateway.send_to_storage.call_count, 1)
+        self.assertEqual(gateway.send_to_storage.call_count, 1)
         
         connction._run()
-        self.assertEquals(gateway.send_to_storage.call_count, 1)
+        self.assertEqual(gateway.send_to_storage.call_count, 1)
         
         
 if __name__ == '__main__':

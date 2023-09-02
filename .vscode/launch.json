@@ -17,7 +17,7 @@
             "name": "Test",
             "type": "python",
             "request": "launch",
-            "program": "/home/sanaz/viraweb123/odoo-iot/vw-gateway/tests/magic_number_tests.py",
+            "program": "/home/sanaz/viraweb123/odoo-iot/vw-gateway/tests",
             "console": "integratedTerminal",
             "justMyCode": false,
             "cwd": "/home/sanaz/viraweb123/odoo-iot/vw-gateway"
