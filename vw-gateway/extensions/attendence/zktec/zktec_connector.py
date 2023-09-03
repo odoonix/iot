@@ -243,7 +243,7 @@ class ZktecPro(Connector, Thread):
               " magic" : is_device_id(self._magic_number, attendance.user_id)}
         with open(self.__storage_path + '/date_magic.txt', 'w') as f:
             f.writelines(str(rs))
-        return datetime.timestamp(attendance.timestamp) > lastdatetime and is_device_id(self._magic_number, attendance.user_id)
+        return datetime.timestamp(attendance.timestamp)*1000 > lastdatetime and is_device_id(self._magic_number, attendance.user_id)
 
     def _remove_timezone(self, attendance):
         tz = pytz.FixedOffset(int(self._timezone))

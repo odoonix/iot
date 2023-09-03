@@ -168,7 +168,7 @@ class TestStringMethods(unittest.TestCase):
                 "Network Params": "network_params",
                 "Mac": "mac",
                 "Pin Width": "pin_width"
-            })
+            }) 
         connction._zkteco_get_attendance = MagicMock(return_value=[])
         
         connction._run()
