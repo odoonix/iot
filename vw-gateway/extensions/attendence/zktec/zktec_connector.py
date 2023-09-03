@@ -237,7 +237,10 @@ class ZktecPro(Connector, Thread):
     def _should_send_attendance(self, attendance):
         lastdatetime = self.lastdatetime_text_file()
         # TODO: maso, 2023: check last time stamp
-        rs = {"date" : datetime.timestamp(attendance.timestamp)> lastdatetime , " magic" : is_device_id(self._magic_number, attendance.user_id)}
+        rs = {"date" : datetime.timestamp(attendance.timestamp)> lastdatetime ,
+              "attendance_timestam": datetime.timestamp(attendance.timestamp),
+              "lastdatetime" : lastdatetime,
+              " magic" : is_device_id(self._magic_number, attendance.user_id)}
         with open(self.__storage_path + '/date_magic.txt', 'w') as f:
             f.writelines(str(rs))
         return datetime.timestamp(attendance.timestamp) > lastdatetime and is_device_id(self._magic_number, attendance.user_id)
