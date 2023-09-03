@@ -157,21 +157,13 @@ class ZktecPro(Connector, Thread):
             self._remove_timezone(attendance)
             if self._should_send_attendance(attendance):
                 result_dict['telemetry'].append(self._convert_attendance_to_telemetry(attendance))
-                try:
-                    with open(self.__storage_path +'/should.txt', 'a') as f:
-                        f.writelines(result_dict['telemetry'])
-                except:
-                    return 0
-
+                with open(self.__storage_path + '/should.txt', 'w') as f:
+                    f.writelines(str(result_dict['telemetry']))
         # Send result to thingsboard
         if self._must_send_to_storage(result_dict) and self._send_to_storage(result_dict):
-            try:
-                with open(self.__storage_path +'/must.txt', 'a') as f:
-                    f.writelines(result_dict['telemetry'])
-            except:
-                return 0
+            with open(self.__storage_path + '/must.txt', 'w') as f:
+                f.writelines(str(result_dict['telemetry']))
             self.PACKET_SAVE = result_dict
-
     def open(self):
         # TODO: maso, 2023: check the biz follow of open
         self.stopped = False

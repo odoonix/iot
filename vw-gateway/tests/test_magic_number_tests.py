@@ -124,8 +124,7 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(0, connction.lastdatetime_text_file())
         path.unlink(missing_ok=True)
         
-
-     
+        
     def test_run_single(self):
         config = Object()
         device = Object()
@@ -150,7 +149,7 @@ class TestStringMethods(unittest.TestCase):
                 "ZKTec Error": False,
                 "Records": 100,
                 "Max Records": 1000,
-                "Users": 10,
+                "Users": 10, 
                 "Max Users": 1000,
                 "Fingers": 20,
                 "max_fingers": 2000,
@@ -185,13 +184,15 @@ class TestStringMethods(unittest.TestCase):
         gateway = Object()
         connector_type = Object()
 
-        device.get = MagicMock(return_value='1')
+        device.get = MagicMock(return_value='0')
         gateway.send_to_storage = MagicMock(return_value=Status.SUCCESS)
         gateway.add_device = MagicMock(return_value=Status.SUCCESS)
 
         def side_effect_func(val, *args, **kwargs):
             if val == 'device':
                 return device
+            if val == 'magic_number':
+                return 0
             return 'test'
         config.get = MagicMock(side_effect=side_effect_func)
 
