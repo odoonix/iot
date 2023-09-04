@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 from threading import Thread
@@ -22,6 +23,7 @@ sem = threading.Semaphore(1)
 
 MASCK_MAX = 62
 MASCK_MIN = 1
+
 
 def _check_magic_number(magic_number):
     if (magic_number > MASCK_MAX or magic_number < 0):
@@ -64,11 +66,11 @@ def not_equal_packet(packet_send, packet_save):
 
 ATTENDANCE_TELEMETRY_SCHEMA = Schema({
     Optional('deviceName'): And(str, len),
-    Optional('deviceType'): And(str,len),
-    Optional('attributes'):[{
+    Optional('deviceType'): And(str, len),
+    Optional('attributes'): [{
         'Device_name': str
     }],
-    Optional('telemetry'):[{
+    Optional('telemetry'): [{
         "ts": Or(int, float),
         "values": {
             "user_id": And(int),
@@ -109,7 +111,7 @@ class ZktecPro(Connector, Thread):
         # Create device
         self.gateway.add_device(self.__deviceName, {"connector": self},
                                 device_type=self.__deviceType)
-        
+
         log.info("Starting Custom connector")
 
     def get_config(self):
@@ -147,23 +149,21 @@ class ZktecPro(Connector, Thread):
         }
 
         self._zkteco_connect()
-        
+
         # Send Attribute
         result_dict['attributes'].append(self._zkteco_get_attribute())
 
         # Send Telemetry
         attendances = self._zkteco_get_attendance()
         for attendance in attendances:
-            self._remove_timezone(attendance)
-            if self._should_send_attendance(attendance):
-                result_dict['telemetry'].append(self._convert_attendance_to_telemetry(attendance))
-                with open(self.__storage_path + '/should.txt', 'w') as f:
-                    f.writelines(str(result_dict['telemetry']))
+            item = self._convert_attendance_to_telemetry(attendance)
+            if self._should_send_attendance(item):
+                result_dict['telemetry'].append(item)
+
         # Send result to thingsboard
         if self._must_send_to_storage(result_dict) and self._send_to_storage(result_dict):
-            with open(self.__storage_path + '/must.txt', 'w') as f:
-                f.writelines(str(result_dict['telemetry']))
             self.PACKET_SAVE = result_dict
+
     def open(self):
         # TODO: maso, 2023: check the biz follow of open
         self.stopped = False
@@ -218,34 +218,29 @@ class ZktecPro(Connector, Thread):
     #                                 packets utils
     ##############################################################################################
     PACKET_SAVE = {'attributes': [],
-               'telemetry': []}
-    
+                   'telemetry': []}
+
     def _must_send_to_storage(self, result_dict):
         # Check Successful Send
         if not not_equal_packet(result_dict, self.PACKET_SAVE):
             return False
-    
+
         try:
             ATTENDANCE_TELEMETRY_SCHEMA.validate(result_dict)
         except SchemaError as ex:
             self.__logger.error("ZKTec unsupported exception happend %s", ex)
             traceback.print_exc()
             return False
-        
+
         return True
-    
-    def _should_send_attendance(self, attendance):
+
+    def _should_send_attendance(self, item):
         lastdatetime = self.lastdatetime_text_file()
         # TODO: maso, 2023: check last time stamp
-        rs = {"date" : datetime.timestamp(attendance.timestamp)*1000> lastdatetime ,
-              "attendance_timestam": datetime.timestamp(attendance.timestamp)*1000,
-              "lastdatetime" : lastdatetime,
-              " magic" : is_device_id(self._magic_number, attendance.user_id)}
-        with open(self.__storage_path + '/date_magic.txt', 'w') as f:
-            f.writelines(str(rs))
-        return datetime.timestamp(attendance.timestamp)*1000 > lastdatetime and is_device_id(self._magic_number, attendance.user_id)
 
-    def _remove_timezone(self, attendance):
+        return item['ts'] > lastdatetime and is_device_id(self._magic_number, item['values']['user_id'])
+
+    def _convert_attendance_to_telemetry(self, attendance):
         tz = pytz.FixedOffset(int(self._timezone))
 
         datetimeOrg = attendance.timestamp
@@ -258,19 +253,16 @@ class ZktecPro(Connector, Thread):
             datetimeOrg.second,
             tzinfo=tz
         )
-        attendance.timestamp = datetime.fromtimestamp(
+        attendance_date = datetime.fromtimestamp(
             datetime.timestamp(dateTimeUts))
-        return attendance.timestamp
-
-    def _convert_attendance_to_telemetry(self, attendance):
         attendance_telemetry = {
-            "ts": attendance.timestamp.timestamp()*1000,
+            "ts": attendance_date.timestamp()*1000,
             "values": {
                 "user_id": convert_to_company_id(
                     magic_number=self._magic_number,
                     user_id_device=int(attendance.user_id)
                 ),
-                "timestamp": str(attendance.timestamp),
+                "timestamp": str(attendance_date),
                 "punch": 'out' if attendance.punch == 2 else 'in',
                 "device_name": self.__deviceName
             }
@@ -414,7 +406,6 @@ class ZktecPro(Connector, Thread):
         )
         self._zkteco_enroll_user(magic_user_id)
 
-
     def update_user(self, params, content):
 
         if not self._is_zkteco_connected():
@@ -530,8 +521,7 @@ class ZktecPro(Connector, Thread):
             self.connection.save_user_template(*args, **kwargs)
         finally:
             sem.release()
-    
-    
+
     def _zkteco_enroll_user(self, *args, **kwargs):
         if not self._is_zkteco_connected():
             raise Exception("Device is not connected")
@@ -541,37 +531,33 @@ class ZktecPro(Connector, Thread):
         finally:
             sem.release()
 
-
-
-
     ##############################################################################################
     #                                 Gateway util
     ##############################################################################################
-    
+
     def _gateway_send_rpc_reply(self, *args, **kwargs):
         self.gateway.send_rpc_reply(*args, **kwargs)
-    
-    
+
     def _send_to_storage(self, result_dict):
         if self.gateway.send_to_storage(self.get_name(), result_dict) == Status.SUCCESS:
             init_value = {
                 'ts': 0
             }
-            latest = reduce(lambda x, y: x if x['ts'] > y['ts'] else y, result_dict['telemetry'], init_value)
+            latest = reduce(
+                lambda x, y: x if x['ts'] > y['ts'] else y, result_dict['telemetry'], init_value)
             if latest['ts'] == 0:
                 return True
             path = self.get_storage_path()
             if not os.path.exists(os.path.dirname(path.absolute())):
                 try:
                     os.makedirs(os.path.dirname(path.absolute()))
-                except OSError as exc: # Guard against race condition
+                except OSError as exc:  # Guard against race condition
                     raise
             with open(path, 'w') as f:
                 f.write(str(latest['ts']))
             return True
         return False
-            
-    
+
     def lastdatetime_text_file(self):
         # Fetch last date time
         try:

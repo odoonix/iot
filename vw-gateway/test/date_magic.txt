@@ -1,1 +1,0 @@
-{'date': False, 'attendance_timestam': 1641047401.0, 'lastdatetime': 1641034801000.0, ' magic': True}

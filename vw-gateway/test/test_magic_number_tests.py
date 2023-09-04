@@ -237,6 +237,62 @@ class TestStringMethods(unittest.TestCase):
         connction._run()
         self.assertEqual(gateway.send_to_storage.call_count, 1)
         
+    
+    def test_run_single_with_telemetry_when_data_removed(self):
+        config = Object()
+        device = Object()
+        gateway = Object()
+        connector_type = Object()
+
+        device.get = MagicMock(return_value='0')
+        gateway.send_to_storage = MagicMock(return_value=Status.SUCCESS)
+        gateway.add_device = MagicMock(return_value=Status.SUCCESS)
+
+        def side_effect_func(val, *args, **kwargs):
+            if val == 'device':
+                return device
+            if val == 'magic_number':
+                return 0
+            return 'test'
+        config.get = MagicMock(side_effect=side_effect_func)
+
+        connction = zktec_connector.ZktecPro(gateway, config, connector_type)
+        self.assertIsNotNone(connction)
+        
+        connction._zkteco_connect = MagicMock(return_value=True)
+        connction._zkteco_get_attribute = MagicMock(return_value={
+                "ZKTec Error": False,
+                "Records": 100,
+                "Max Records": 1000,
+                "Users": 10,
+                "Max Users": 1000,
+                "Fingers": 20,
+                "max_fingers": 2000,
+                "Faces": 10,
+                "Max Faces": 1000,
+                "Firmware Version": "version",
+                "Serialnumber": "1234558",
+                "Platform": "platform",
+                "Device_name": "device_name",
+                "Face Version": "face_version",
+                "Finger Print Version": "fp_version",
+                "Extend Fmt": "extend_fmt",
+                "User Extend Fmt": "user_extend_fmt",
+                "Face Fun On": "face_fun_on",
+                "Compat Old Firmware": "compat_old_firmware",
+                "Network Params": "network_params",
+                "Mac": "mac",
+                "Pin Width": "pin_width"
+            })
+        connction._zkteco_get_attendance = MagicMock(return_value=[
+            attendance.Attendance(user_id=1, timestamp= datetime(2022, 1, 1, 8, 0, 1), status=1, punch=0, uid=1),
+        ])
+        
+        connction._run()
+        self.assertEqual(gateway.send_to_storage.call_count, 1)
+        
+        connction._run()
+        self.assertEqual(gateway.send_to_storage.call_count, 1)
         
 if __name__ == '__main__':
     unittest.main()
