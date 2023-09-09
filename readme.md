@@ -4,6 +4,23 @@
 
 -add WorkingDirectory in vw-gateway and Chang ExecStart in service
 
+for example
+
+```
+cat << 'EOF' > vw-gateway.service
+[Unit]
+Description=My test service
+After=multi-user.target
+[Service]
+Type=simple
+Restart=always
+WorkingDirectory=/root/.vw-gateway
+ExecStart=/usr/bin/python3 "/root/git/odoo-iot/vw-gateway/main.py" --extension "/root/git/odoo-iot/vw-gateway/extensions"  --config "/root/.vw-gateway/conf.yaml"
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
 -systemctl daemon-reload
 
 -systemctl restart vw-gateway 
