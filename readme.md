@@ -6,6 +6,7 @@
 
 for example
 
+Change according to the address of the Python file
 ```
 cat << 'EOF' > vw-gateway.service
 [Unit]
