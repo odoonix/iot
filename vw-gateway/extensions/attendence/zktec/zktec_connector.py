@@ -19,6 +19,7 @@ import sys
 from schema import Schema, And, Use, Optional, SchemaError, Or
 from functools import reduce
 
+
 sem = threading.Semaphore(1)
 
 MASCK_MAX = 62
@@ -112,14 +113,14 @@ class ZktecPro(Connector, Thread):
         self.gateway.add_device(self.__deviceName, {"connector": self},
                                 device_type=self.__deviceType)
 
-        log.info("Starting Custom connector")
+        log.info("Test Log")
 
     def get_config(self):
         return self.config
 
     def get_name(self):
         return self.name
-
+ 
     def is_connected(self):
         return self._is_zkteco_connected()
 
@@ -157,6 +158,7 @@ class ZktecPro(Connector, Thread):
         attendances = self._zkteco_get_attendance()
         for attendance in attendances:
             item = self._convert_attendance_to_telemetry(attendance)
+            
             if self._should_send_attendance(item):
                 result_dict['telemetry'].append(item)
 
@@ -267,6 +269,7 @@ class ZktecPro(Connector, Thread):
                 "device_name": self.__deviceName
             }
         }
+        
         return attendance_telemetry
     # Main method of thread, must contain an infinite loop and all calls to data receiving/processing functions.
 

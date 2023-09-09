@@ -6,9 +6,6 @@ import os.path
 from pyfiglet import Figlet
 import pkg_resources
 
-
-# "/home/sanaz/viraweb123/odoo-iot/vw-gateway/extensions"
-
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
         parser.error("The file %s does not exist! Use the --help flag for input options." % arg)
@@ -40,20 +37,8 @@ args = parser.parse_args()
 f = Figlet(font='big')
 print (f.renderText('ViraWeb123')) 
 
-print("Thingsboard Gateway Package Version is :" + pkg_resources.get_distribution("thingsboard-gateway").version)
+#print("Thingsboard Gateway Package Version is :" + pkg_resources.get_distribution("thingsboard-gateway").version)
 
 TBModuleLoader.PATHS.append(args.extension)
-
 TBGatewayService(args.config)
 
-
-#TBModuleLoader.PATHS.append("/home/sanaz/viraweb123/odoo-iot/vw-gateway/extensions")
-
-#TBGatewayService("/home/sanaz/viraweb123/odoo-iot/vw-gateway/ubuntu/configs/conf.yaml")
-
-
-#  viraweb123/odoo-iot/vw-gateway                  $ python main.py --config ../configs/conf.yaml    
-
-# python ../viraweb123/odoo-iot/vw-gateway/main.py --config ../tools/configs/conf.yaml --extension ../Videos/extensions
-
-#TBGatewayService('../configs/conf.yaml')
