@@ -2,7 +2,7 @@
 
 -install schema
 
--add WorkingDirectory in vw-gateway
+-add WorkingDirectory in vw-gateway and Chang ExecStart in service
 
 -systemctl daemon-reload
 
