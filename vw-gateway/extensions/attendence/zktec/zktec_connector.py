@@ -113,8 +113,9 @@ class ZktecPro(Connector, Thread):
         self.gateway.add_device(self.__deviceName, {"connector": self},
                                 device_type=self.__deviceType)
 
-        log.info("Test Log")
-
+        log.info(f'magic number value is : {self._magic_number}')
+        
+        
     def get_config(self):
         return self.config
 
@@ -270,6 +271,7 @@ class ZktecPro(Connector, Thread):
             }
         }
         
+        log.info(f'user id device is : {int(attendance.user_id)}')
         return attendance_telemetry
     # Main method of thread, must contain an infinite loop and all calls to data receiving/processing functions.
 
