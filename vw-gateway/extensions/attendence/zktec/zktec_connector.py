@@ -158,10 +158,11 @@ class ZktecPro(Connector, Thread):
         # Send Telemetry
         attendances = self._zkteco_get_attendance()
         for attendance in attendances:
-            item = self._convert_attendance_to_telemetry(attendance)
-            
-            if self._should_send_attendance(item):
-                result_dict['telemetry'].append(item)
+            if is_device_id(self._magic_number, attendance.user_id):
+                item = self._convert_attendance_to_telemetry(attendance)
+                
+                if self._should_send_attendance(item):
+                    result_dict['telemetry'].append(item)
 
         # Send result to thingsboard
         if self._must_send_to_storage(result_dict) and self._send_to_storage(result_dict):
@@ -241,7 +242,7 @@ class ZktecPro(Connector, Thread):
         lastdatetime = self.lastdatetime_text_file()
         # TODO: maso, 2023: check last time stamp
 
-        return item['ts'] > lastdatetime and is_device_id(self._magic_number, item['values']['user_id'])
+        return item['ts'] > lastdatetime 
 
     def _convert_attendance_to_telemetry(self, attendance):
         tz = pytz.FixedOffset(int(self._timezone))
@@ -271,7 +272,6 @@ class ZktecPro(Connector, Thread):
             }
         }
         
-        log.info(f'user id device is : {int(attendance.user_id)}')
         return attendance_telemetry
     # Main method of thread, must contain an infinite loop and all calls to data receiving/processing functions.
 
