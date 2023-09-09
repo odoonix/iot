@@ -8,3 +8,7 @@
 
 -systemctl restart vw-gateway 
 
+-Create logs Folder in WorkingDirectory
+
+-Create logs.conf file
+
