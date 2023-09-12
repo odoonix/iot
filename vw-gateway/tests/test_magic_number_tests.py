@@ -268,7 +268,7 @@ class TestStringMethods(unittest.TestCase):
             attendance.Attendance(user_id=530, timestamp= datetime(2022, 1, 1, 10, 0, 1), status=1, punch=0, uid=530),
             attendance.Attendance(user_id=530, timestamp= datetime(2022, 1, 1, 11, 0, 1), status=1, punch=1, uid=530),
         ]
-        conveted_attendance  = connector._convert_attendance_to_telemetry(attendances[0])
+        conveted_attendance  = connector._convert_attendance_to_telemetry(attendances[0],"ZMM220_TFT")
         self.assertEqual(conveted_attendance['values']['user_id'], 18)
 
         

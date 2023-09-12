@@ -154,12 +154,13 @@ class ZktecPro(Connector, Thread):
 
         # Send Attribute
         result_dict['attributes'].append(self._zkteco_get_attribute())
-
+        device_platform = result_dict['attributes'][0]['Platform']
+        
         # Send Telemetry
         attendances = self._zkteco_get_attendance()
         for attendance in attendances:
             if is_device_id(self._magic_number, attendance.user_id):
-                item = self._convert_attendance_to_telemetry(attendance)
+                item = self._convert_attendance_to_telemetry(attendance, device_platform)
                 
                 if self._should_send_attendance(item):
                     result_dict['telemetry'].append(item)
@@ -244,7 +245,7 @@ class ZktecPro(Connector, Thread):
 
         return item['ts'] > lastdatetime 
 
-    def _convert_attendance_to_telemetry(self, attendance):
+    def _convert_attendance_to_telemetry(self, attendance, device_platform):
         tz = pytz.FixedOffset(int(self._timezone))
 
         datetimeOrg = attendance.timestamp
@@ -259,6 +260,13 @@ class ZktecPro(Connector, Thread):
         )
         attendance_date = datetime.fromtimestamp(
             datetime.timestamp(dateTimeUts))
+        
+        _punch = "in"
+        if device_platform == "ZMM220_TFT" and attendance.punch == 2:
+            _punch = "out"
+        elif device_platform == "ZEM600_TFT" and attendance.punch == 1:
+            _punch = "out"
+        
         attendance_telemetry = {
             "ts": attendance_date.timestamp()*1000,
             "values": {
@@ -267,7 +275,7 @@ class ZktecPro(Connector, Thread):
                     user_id_device=int(attendance.user_id)
                 ),
                 "timestamp": str(attendance_date),
-                "punch": 'out' if attendance.punch == 2 else 'in',
+                "punch": _punch,
                 "device_name": self.__deviceName
             }
         }
@@ -380,26 +388,26 @@ class ZktecPro(Connector, Thread):
 
             return {
                 "Records": self.connection.records,
-                "Max Records": self.connection.rec_cap,
+                "Max_Records": self.connection.rec_cap,
                 "Users": self.connection.users,
-                "Max Users": self.connection.users_cap,
+                "Max_Users": self.connection.users_cap,
                 "Fingers": self.connection.fingers,
-                "Max Fingers": self.connection.fingers_cap,
+                "Max_Fingers": self.connection.fingers_cap,
                 "Faces": self.connection.faces,
-                "Max Faces": self.connection.faces_cap,
-                "Firmware Version": firmware_version,
+                "Max_Faces": self.connection.faces_cap,
+                "Firmware_Version": firmware_version,
                 "Serialnumber": serialnumber,
                 "Platform": platform,
                 "Device_name": device_name,
-                "Face Version": face_version,
-                "Finger Print Version": fp_version,
-                "Extend Fmt": extend_fmt,
-                "User Extend Fmt": user_extend_fmt,
-                "Face Fun On": face_fun_on,
-                "Compat Old Firmware": compat_old_firmware,
-                "Network Params": network_params,
+                "Face_Version": face_version,
+                "Finger_Print_Version": fp_version,
+                "Extend_Fmt": extend_fmt,
+                "User_Extend_Fmt": user_extend_fmt,
+                "Face_Fun_On": face_fun_on,
+                "Compat_Old_Firmware": compat_old_firmware,
+                "Network_Params": network_params,
                 "Mac": mac,
-                "Pin Width": pin_width
+                "Pin_Width": pin_width
             }
         finally:
             sem.release()

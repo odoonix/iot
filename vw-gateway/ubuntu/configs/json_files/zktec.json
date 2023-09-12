@@ -7,7 +7,7 @@
         "name" : "Shiraz Startup Factory ZKTec Device",
         "ip": "192.168.88.159",
         "port": "4370",
-        "password": "0",
+        "password": "8984",
         "timezone": "210",
         "magic_number": 1,
         
