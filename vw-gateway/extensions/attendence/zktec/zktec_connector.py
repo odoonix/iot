@@ -440,7 +440,7 @@ class ZktecPro(Connector, Thread):
 
             # user not exist Create user
             if exist_user == 0:
-                self._zkteco_set_user(magic_user_id,
+                self._zkteco_set_user(int(magic_user_id),
                                       value["name"],
                                       value["privilege"],
                                       value["password"],
@@ -459,7 +459,7 @@ class ZktecPro(Connector, Thread):
                         save_fingers.append(finger)
 
                 self._zkteco_delete_user(user_id=str(magic_user_id))
-                self._zkteco_set_user(magic_user_id,
+                self._zkteco_set_user(int(magic_user_id),
                                       value["name"],
                                       value["privilege"],
                                       value["password"],
