@@ -220,8 +220,7 @@ class ZktecPro(Connector, Thread):
 
     def update_user(self, params, content):
 
-        if not self._is_zkteco_connected():
-            raise Exception("Device is not connected")
+        
 
         users = self._zkteco_get_users()
 
@@ -273,8 +272,6 @@ class ZktecPro(Connector, Thread):
             )
 
     def del_user(self, params, content):
-        if not self._is_zkteco_connected():
-            raise Exception("Device is not connected")
 
         for key, value in params.items():
             magic_user_id = convert_to_device_id(
@@ -363,10 +360,14 @@ class ZktecPro(Connector, Thread):
     ##############################################################################################
 
     def _is_zkteco_connected(self):
-        return self.connection and self.connection.is_connect
+        a = self._zkteco_get_attribute()
+        if a:
+            return True
+        else:
+            return False
 
     def _zkteco_close(self):
-        if self._is_zkteco_connected():
+        if self.connection:
             self.connection.disconnect()
             self.connection = None
 
