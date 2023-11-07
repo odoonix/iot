@@ -114,8 +114,7 @@ class ZktecPro(Connector, Thread):
                                 device_type=self.__deviceType)
 
         log.info(f'magic number value is : {self._magic_number}')
-        
-        
+             
     def get_config(self):
         return self.config
 
@@ -429,14 +428,15 @@ class ZktecPro(Connector, Thread):
         for key, value in params.items():
             # Check user is exist
             exist_user = 0
-            for item in users:
-                if item.user_id == value["user_id"]:
-                    exist_user = item
-
             # set magic number
             magic_user_id = convert_to_device_id(
                 user_id_company=int(value["uid"]),
                 magic_number=self._magic_number)
+            
+            for item in users:
+                
+                if item.uid == magic_user_id:
+                    exist_user = item
 
             # user not exist Create user
             if exist_user == 0:

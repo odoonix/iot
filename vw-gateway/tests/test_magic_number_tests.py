@@ -1,3 +1,4 @@
+import zktec_connector
 import unittest
 from unittest.mock import MagicMock
 import sys
@@ -7,11 +8,13 @@ from datetime import datetime
 
 from zk import attendance
 
-sys.path.append(os.path.abspath('/home/sanaz/viraweb123/odoo-iot/vw-gateway/extensions/attendence/zktec'))
-import zktec_connector
+sys.path.append(os.path.abspath(
+    '/home/sanaz/viraweb123/odoo-iot/vw-gateway/extensions/attendence/zktec'))
+
 
 class Object(object):
     pass
+
 
 class TestStringMethods(unittest.TestCase):
 
@@ -66,23 +69,23 @@ class TestStringMethods(unittest.TestCase):
 
         connction = zktec_connector.ZktecPro(gateway, config, connector_type)
         self.assertIsNotNone(connction)
-        
+
         result_dict = {
-            'telemetry':[{
+            'telemetry': [{
                 "ts": 1,
                 "values": {
                     "user_id": 3,
                     "timestamp":  "2023-10-4 10:01:00",
                     "punch": "out",
                     "device_name":  "test2"}
-            },{
+            }, {
                 "ts": 2,
                 "values": {
                     "user_id": 3,
                     "timestamp":  "2023-10-4 10:02:00",
                     "punch": "out",
                     "device_name":  "test2"}
-            },{
+            }, {
                 "ts": 3,
                 "values": {
                     "user_id": 3,
@@ -93,13 +96,13 @@ class TestStringMethods(unittest.TestCase):
         }
         path = connction.get_storage_path()
         path.unlink(missing_ok=True)
-        
+
         connction._send_to_storage(result_dict)
         self.assertTrue(path.is_file())
-        
+
         self.assertEqual(3, connction.lastdatetime_text_file())
         path.unlink(missing_ok=True)
-        
+
     def test_lastdatetime_text_file(self):
         config = Object()
         device = Object()
@@ -118,13 +121,12 @@ class TestStringMethods(unittest.TestCase):
 
         connction = zktec_connector.ZktecPro(gateway, config, connector_type)
         self.assertIsNotNone(connction)
-        
+
         path = connction.get_storage_path()
         path.unlink(missing_ok=True)
         self.assertEqual(0, connction.lastdatetime_text_file())
         path.unlink(missing_ok=True)
-        
-        
+
     def test_run_single(self):
         config = Object()
         device = Object()
@@ -143,41 +145,40 @@ class TestStringMethods(unittest.TestCase):
 
         connction = zktec_connector.ZktecPro(gateway, config, connector_type)
         self.assertIsNotNone(connction)
-        
+
         connction._zkteco_connect = MagicMock(return_value=True)
         connction._zkteco_get_attribute = MagicMock(return_value={
-                "ZKTec Error": False,
-                "Records": 100,
-                "Max Records": 1000,
-                "Users": 10, 
-                "Max Users": 1000,
-                "Fingers": 20,
-                "max_fingers": 2000,
-                "Faces": 10,
-                "Max Faces": 1000,
-                "Firmware Version": "version",
-                "Serialnumber": "1234558",
-                "Platform": "platform",
-                "Device_name": "device_name",
-                "Face Version": "face_version",
-                "Finger Print Version": "fp_version",
-                "Extend Fmt": "extend_fmt",
-                "User Extend Fmt": "user_extend_fmt",
-                "Face Fun On": "face_fun_on",
-                "Compat Old Firmware": "compat_old_firmware",
-                "Network Params": "network_params",
-                "Mac": "mac",
-                "Pin Width": "pin_width"
-            }) 
+            "ZKTec Error": False,
+            "Records": 100,
+            "Max Records": 1000,
+            "Users": 10,
+            "Max Users": 1000,
+            "Fingers": 20,
+            "max_fingers": 2000,
+            "Faces": 10,
+            "Max Faces": 1000,
+            "Firmware Version": "version",
+            "Serialnumber": "1234558",
+            "Platform": "platform",
+            "Device_name": "device_name",
+            "Face Version": "face_version",
+            "Finger Print Version": "fp_version",
+            "Extend Fmt": "extend_fmt",
+            "User Extend Fmt": "user_extend_fmt",
+            "Face Fun On": "face_fun_on",
+            "Compat Old Firmware": "compat_old_firmware",
+            "Network Params": "network_params",
+            "Mac": "mac",
+            "Pin Width": "pin_width"
+        })
         connction._zkteco_get_attendance = MagicMock(return_value=[])
-        
-        connction._run()
-        self.assertEqual(gateway.send_to_storage.call_count, 1)
-        
+
         connction._run()
         self.assertEqual(gateway.send_to_storage.call_count, 1)
 
-     
+        connction._run()
+        self.assertEqual(gateway.send_to_storage.call_count, 1)
+
     def test_run_single_with_telemetry(self):
         config = Object()
         device = Object()
@@ -198,45 +199,49 @@ class TestStringMethods(unittest.TestCase):
 
         connction = zktec_connector.ZktecPro(gateway, config, connector_type)
         self.assertIsNotNone(connction)
-        
+
         connction._zkteco_connect = MagicMock(return_value=True)
         connction._zkteco_get_attribute = MagicMock(return_value={
-                "ZKTec Error": False,
-                "Records": 100,
-                "Max Records": 1000,
-                "Users": 10,
-                "Max Users": 1000,
-                "Fingers": 20,
-                "max_fingers": 2000,
-                "Faces": 10,
-                "Max Faces": 1000,
-                "Firmware Version": "version",
-                "Serialnumber": "1234558",
-                "Platform": "platform",
-                "Device_name": "device_name",
-                "Face Version": "face_version",
-                "Finger Print Version": "fp_version",
-                "Extend Fmt": "extend_fmt",
-                "User Extend Fmt": "user_extend_fmt",
-                "Face Fun On": "face_fun_on",
-                "Compat Old Firmware": "compat_old_firmware",
-                "Network Params": "network_params",
-                "Mac": "mac",
-                "Pin Width": "pin_width"
-            })
+            "ZKTec Error": False,
+            "Records": 100,
+            "Max Records": 1000,
+            "Users": 10,
+            "Max Users": 1000,
+            "Fingers": 20,
+            "max_fingers": 2000,
+            "Faces": 10,
+            "Max Faces": 1000,
+            "Firmware Version": "version",
+            "Serialnumber": "1234558",
+            "Platform": "platform",
+            "Device_name": "device_name",
+            "Face Version": "face_version",
+            "Finger Print Version": "fp_version",
+            "Extend Fmt": "extend_fmt",
+            "User Extend Fmt": "user_extend_fmt",
+            "Face Fun On": "face_fun_on",
+            "Compat Old Firmware": "compat_old_firmware",
+            "Network Params": "network_params",
+            "Mac": "mac",
+            "Pin Width": "pin_width"
+        })
         connction._zkteco_get_attendance = MagicMock(return_value=[
-            attendance.Attendance(user_id=1, timestamp= datetime(2022, 1, 1, 8, 0, 1), status=1, punch=0, uid=1),
-            attendance.Attendance(user_id=1, timestamp= datetime(2022, 1, 1, 9, 0, 1), status=1, punch=1, uid=1),
-            attendance.Attendance(user_id=1, timestamp= datetime(2022, 1, 1, 10, 0, 1), status=1, punch=0, uid=1),
-            attendance.Attendance(user_id=1, timestamp= datetime(2022, 1, 1, 11, 0, 1), status=1, punch=1, uid=1),
+            attendance.Attendance(user_id=1, timestamp=datetime(
+                2022, 1, 1, 8, 0, 1), status=1, punch=0, uid=1),
+            attendance.Attendance(user_id=1, timestamp=datetime(
+                2022, 1, 1, 9, 0, 1), status=1, punch=1, uid=1),
+            attendance.Attendance(user_id=1, timestamp=datetime(
+                2022, 1, 1, 10, 0, 1), status=1, punch=0, uid=1),
+            attendance.Attendance(user_id=1, timestamp=datetime(
+                2022, 1, 1, 11, 0, 1), status=1, punch=1, uid=1),
         ])
-        
+
         connction._run()
         self.assertEqual(gateway.send_to_storage.call_count, 1)
-        
+
         connction._run()
         self.assertEqual(gateway.send_to_storage.call_count, 1)
-        
+
     def test_run_telemetry_with_magic_number(self):
         config = Object()
         device = Object()
@@ -261,16 +266,20 @@ class TestStringMethods(unittest.TestCase):
 
         connector = zktec_connector.ZktecPro(gateway, config, connector_type)
         self.assertIsNotNone(connector)
-        
+
         attendances = [
-            attendance.Attendance(user_id=530, timestamp= datetime(2022, 1, 1, 8, 0, 1), status=1, punch=0,  uid=530),
-            attendance.Attendance(user_id=530, timestamp= datetime(2022, 1, 1, 9, 0, 1), status=1, punch=1,  uid=530),
-            attendance.Attendance(user_id=530, timestamp= datetime(2022, 1, 1, 10, 0, 1), status=1, punch=0, uid=530),
-            attendance.Attendance(user_id=530, timestamp= datetime(2022, 1, 1, 11, 0, 1), status=1, punch=1, uid=530),
+            attendance.Attendance(user_id=530, timestamp=datetime(
+                2022, 1, 1, 8, 0, 1), status=1, punch=0,  uid=530),
+            attendance.Attendance(user_id=530, timestamp=datetime(
+                2022, 1, 1, 9, 0, 1), status=1, punch=1,  uid=530),
+            attendance.Attendance(user_id=530, timestamp=datetime(
+                2022, 1, 1, 10, 0, 1), status=1, punch=0, uid=530),
+            attendance.Attendance(user_id=530, timestamp=datetime(
+                2022, 1, 1, 11, 0, 1), status=1, punch=1, uid=530),
         ]
-        conveted_attendance  = connector._convert_attendance_to_telemetry(attendances[0],"ZMM220_TFT")
+        conveted_attendance = connector._convert_attendance_to_telemetry(
+            attendances[0], "ZMM220_TFT")
         self.assertEqual(conveted_attendance['values']['user_id'], 18)
 
-        
 if __name__ == '__main__':
     unittest.main()
