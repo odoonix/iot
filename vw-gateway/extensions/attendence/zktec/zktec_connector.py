@@ -132,12 +132,7 @@ class ZktecPro(Connector, Thread):
                 logging.error('ZKTec unsupported exception happend: %s', ex)
 
                 traceback.print_exc()
-                # Note: for network connection
-                try:
-                    self._zkteco_connect()
-                except:
-                    pass
-
+                
             finally:
                 time.sleep(30)
 
@@ -148,8 +143,6 @@ class ZktecPro(Connector, Thread):
             'attributes': [],
             'telemetry': [],
         }
-
-        self._zkteco_connect()
 
         # Send Attribute
         result_dict['attributes'].append(self._zkteco_get_attribute())
@@ -214,9 +207,87 @@ class ZktecPro(Connector, Thread):
             self.__logger.error(
                 "ZKTec network error detected : %s, %s", netex, traceback.extract_stack)
             if tries_count > 0:
-                self._zkteco_connect()
+                
                 return self._server_side_rpc_handler(content, tries_count-1)
             raise netex
+
+    def update_fingerprint(self, params):
+        magic_user_id = convert_to_device_id(
+            user_id_company=int(params["user_id_change"]),
+            magic_number=self._magic_number
+        )
+        self._zkteco_enroll_user(uid = magic_user_id)
+
+    def update_user(self, params, content):
+
+        if not self._is_zkteco_connected():
+            raise Exception("Device is not connected")
+
+        users = self._zkteco_get_users()
+
+        for key, value in params.items():
+            # Check user is exist
+            exist_user = 0
+            # set magic number
+            magic_user_id = convert_to_device_id(
+                user_id_company=int(value["uid"]),
+                magic_number=self._magic_number)
+            
+            for item in users:
+                if item.uid == magic_user_id:
+                    exist_user = item
+
+            # user not exist Create user
+            if exist_user == 0:
+                self._zkteco_set_user(uid = int(magic_user_id),
+                                      name = value["name"],
+                                      privilege = value["privilege"],
+                                      password = value["password"],
+                                      group_id = value["group_id"],
+                                      card = int(value["card"]))
+            else:
+                # user is exist delete and create
+                # save finger print
+
+                fingers = self._zkteco_get_templates()
+
+                save_fingers = []
+                for finger in fingers:
+                    if finger.uid == magic_user_id:
+                        save_fingers.append(finger)
+
+                self._zkteco_delete_user(user_id=magic_user_id)
+                self._zkteco_set_user(uid = int(magic_user_id),
+                                      name = value["name"],
+                                      privilege = value["privilege"],
+                                      password = value["password"],
+                                      group_id = value["group_id"],
+                                      card = int(value["card"]))
+                # add finger print
+                self._zkteco_save_user_template(magic_user_id, save_fingers)
+
+            self._gateway_send_rpc_reply(
+                device=content["device"],
+                req_id=content["data"]["id"],
+                content={"success_sent": 'True'}
+            )
+
+    def del_user(self, params, content):
+        if not self._is_zkteco_connected():
+            raise Exception("Device is not connected")
+
+        for key, value in params.items():
+            magic_user_id = convert_to_device_id(
+                user_id_company=int(value['user_id_delete']),
+                magic_number=self._magic_number)
+
+            self._zkteco_delete_user(magic_user_id)
+
+            self.gateway.send_rpc_reply(
+                device=content["device"],
+                req_id=content["data"]["id"],
+                content={"success_sent": 'True'}
+            )
 
     ##############################################################################################
     #                                 packets utils
@@ -328,6 +399,7 @@ class ZktecPro(Connector, Thread):
     def _zkteco_get_attribute(self):
         try:
             sem.acquire()
+            self._zkteco_connect()
             try:
                 self.connection.read_sizes()
             except:
@@ -409,135 +481,71 @@ class ZktecPro(Connector, Thread):
                 "Pin_Width": pin_width
             }
         finally:
+            self._zkteco_close()
             sem.release()
-
-    def update_fingerprint(self, params):
-        magic_user_id = convert_to_device_id(
-            user_id_company=int(params["user_id_change"]),
-            magic_number=self._magic_number
-        )
-        self._zkteco_enroll_user(uid = magic_user_id)
-
-    def update_user(self, params, content):
-
-        if not self._is_zkteco_connected():
-            raise Exception("Device is not connected")
-
-        users = self._zkteco_get_users()
-
-        for key, value in params.items():
-            # Check user is exist
-            exist_user = 0
-            # set magic number
-            magic_user_id = convert_to_device_id(
-                user_id_company=int(value["uid"]),
-                magic_number=self._magic_number)
-            
-            for item in users:
-                if item.uid == magic_user_id:
-                    exist_user = item
-
-            # user not exist Create user
-            if exist_user == 0:
-                self._zkteco_set_user(uid = int(magic_user_id),
-                                      name = value["name"],
-                                      privilege = value["privilege"],
-                                      password = value["password"],
-                                      group_id = value["group_id"],
-                                      card = int(value["card"]))
-            else:
-                # user is exist delete and create
-                # save finger print
-
-                fingers = self._zkteco_get_templates()
-
-                save_fingers = []
-                for finger in fingers:
-                    if finger.uid == magic_user_id:
-                        save_fingers.append(finger)
-
-                self._zkteco_delete_user(user_id=magic_user_id)
-                self._zkteco_set_user(uid = int(magic_user_id),
-                                      name = value["name"],
-                                      privilege = value["privilege"],
-                                      password = value["password"],
-                                      group_id = value["group_id"],
-                                      card = int(value["card"]))
-                # add finger print
-                self._zkteco_save_user_template(magic_user_id, save_fingers)
-
-            self._gateway_send_rpc_reply(
-                device=content["device"],
-                req_id=content["data"]["id"],
-                content={"success_sent": 'True'}
-            )
-
-    def del_user(self, params, content):
-        if not self._is_zkteco_connected():
-            raise Exception("Device is not connected")
-
-        for key, value in params.items():
-            magic_user_id = convert_to_device_id(
-                user_id_company=int(value['user_id_delete']),
-                magic_number=self._magic_number)
-
-            self._zkteco_delete_user(magic_user_id)
-
-            self.gateway.send_rpc_reply(
-                device=content["device"],
-                req_id=content["data"]["id"],
-                content={"success_sent": 'True'}
-            )
 
     def _zkteco_get_users(self):
         sem.acquire()
+        self._zkteco_connect()
         try:
             return self.connection.get_users()
         finally:
+            self._zkteco_close()
             sem.release()
 
     def _zkteco_delete_user(self, user_id):
         sem.acquire()
+        self._zkteco_connect()
         try:
             self.connection.delete_user(uid = user_id)
         finally:
+            self._zkteco_close()
             sem.release()
 
     def _zkteco_set_user(self, *args, **kwargs):
         sem.acquire()
+        self._zkteco_connect()
         try:
             self.connection.set_user(*args, **kwargs)
         finally:
+            self._zkteco_close()
             sem.release()
 
     def _zkteco_get_attendance(self):
         sem.acquire()
+        self._zkteco_connect()
         try:
             return self.connection.get_attendance()
         finally:
+            self._zkteco_close()
             sem.release()
 
     def _zkteco_get_templates(self):
         sem.acquire()
+        self._zkteco_connect()
         try:
             return self.connection.get_templates()
         finally:
+            self._zkteco_close()
             sem.release()
 
     def _zkteco_save_user_template(self, *args, **kwargs):
         sem.acquire()
+        self._zkteco_connect()
         try:
             self.connection.save_user_template(*args, **kwargs)
         finally:
+            self._zkteco_close()
             sem.release()
 
     def _zkteco_enroll_user(self, *args, **kwargs):
-        if not self._is_zkteco_connected():
-            raise Exception("Device is not connected")
+        
         sem.acquire()
+        self._zkteco_connect()
         try:
             self.connection.enroll_user(*args, **kwargs)
         finally:
+            self._zkteco_close()
             sem.release()
 
     ##############################################################################################
