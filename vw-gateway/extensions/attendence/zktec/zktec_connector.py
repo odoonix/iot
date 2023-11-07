@@ -416,7 +416,7 @@ class ZktecPro(Connector, Thread):
             user_id_company=int(params["user_id_change"]),
             magic_number=self._magic_number
         )
-        self._zkteco_enroll_user(magic_user_id)
+        self._zkteco_enroll_user(uid = magic_user_id)
 
     def update_user(self, params, content):
 
@@ -434,19 +434,17 @@ class ZktecPro(Connector, Thread):
                 magic_number=self._magic_number)
             
             for item in users:
-                
                 if item.uid == magic_user_id:
                     exist_user = item
 
             # user not exist Create user
             if exist_user == 0:
-                self._zkteco_set_user(int(magic_user_id),
-                                      value["name"],
-                                      value["privilege"],
-                                      value["password"],
-                                      value["group_id"],
-                                      str(magic_user_id),
-                                      int(value["card"]))
+                self._zkteco_set_user(uid = int(magic_user_id),
+                                      name = value["name"],
+                                      privilege = value["privilege"],
+                                      password = value["password"],
+                                      group_id = value["group_id"],
+                                      card = int(value["card"]))
             else:
                 # user is exist delete and create
                 # save finger print
@@ -458,15 +456,13 @@ class ZktecPro(Connector, Thread):
                     if finger.uid == magic_user_id:
                         save_fingers.append(finger)
 
-                self._zkteco_delete_user(user_id=str(magic_user_id))
-                self._zkteco_set_user(int(magic_user_id),
-                                      value["name"],
-                                      value["privilege"],
-                                      value["password"],
-                                      value["group_id"],
-                                      str(magic_user_id),
-                                      int(value["card"])
-                                      )
+                self._zkteco_delete_user(user_id=magic_user_id)
+                self._zkteco_set_user(uid = int(magic_user_id),
+                                      name = value["name"],
+                                      privilege = value["privilege"],
+                                      password = value["password"],
+                                      group_id = value["group_id"],
+                                      card = int(value["card"]))
                 # add finger print
                 self._zkteco_save_user_template(magic_user_id, save_fingers)
 
@@ -485,7 +481,7 @@ class ZktecPro(Connector, Thread):
                 user_id_company=int(value['user_id_delete']),
                 magic_number=self._magic_number)
 
-            self._zkteco_delete_user(str(magic_user_id))
+            self._zkteco_delete_user(magic_user_id)
 
             self.gateway.send_rpc_reply(
                 device=content["device"],
@@ -503,7 +499,7 @@ class ZktecPro(Connector, Thread):
     def _zkteco_delete_user(self, user_id):
         sem.acquire()
         try:
-            self.connection.delete_user(user_id)
+            self.connection.delete_user(uid = user_id)
         finally:
             sem.release()
 
