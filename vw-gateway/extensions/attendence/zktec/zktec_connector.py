@@ -114,13 +114,13 @@ class ZktecPro(Connector, Thread):
                                 device_type=self.__deviceType)
 
         log.info(f'magic number value is : {self._magic_number}')
-             
+
     def get_config(self):
         return self.config
 
     def get_name(self):
         return self.name
- 
+
     def is_connected(self):
         return self._is_zkteco_connected()
 
@@ -130,9 +130,7 @@ class ZktecPro(Connector, Thread):
                 self._run()
             except Exception as ex:
                 logging.error('ZKTec unsupported exception happend: %s', ex)
-
                 traceback.print_exc()
-                
             finally:
                 time.sleep(30)
 
@@ -147,13 +145,14 @@ class ZktecPro(Connector, Thread):
         # Send Attribute
         result_dict['attributes'].append(self._zkteco_get_attribute())
         device_platform = result_dict['attributes'][0]['Platform']
-        
+
         # Send Telemetry
         attendances = self._zkteco_get_attendance()
         for attendance in attendances:
             if is_device_id(self._magic_number, attendance.user_id):
-                item = self._convert_attendance_to_telemetry(attendance, device_platform)
-                
+                item = self._convert_attendance_to_telemetry(
+                    attendance, device_platform)
+
                 if self._should_send_attendance(item):
                     result_dict['telemetry'].append(item)
 
@@ -180,7 +179,6 @@ class ZktecPro(Connector, Thread):
         except Exception as ex:
             self.__logger.error("ZKTec unsupported exception happend %s", ex)
             traceback.print_exc()
-
             self.gateway.send_rpc_reply(
                 device=content["device"],
                 req_id=content["data"]["id"],
@@ -207,7 +205,7 @@ class ZktecPro(Connector, Thread):
             self.__logger.error(
                 "ZKTec network error detected : %s, %s", netex, traceback.extract_stack)
             if tries_count > 0:
-                
+
                 return self._server_side_rpc_handler(content, tries_count-1)
             raise netex
 
@@ -216,12 +214,9 @@ class ZktecPro(Connector, Thread):
             user_id_company=int(params["user_id_change"]),
             magic_number=self._magic_number
         )
-        self._zkteco_enroll_user(uid = magic_user_id)
+        self._zkteco_enroll_user(uid=magic_user_id)
 
     def update_user(self, params, content):
-
-        
-
         users = self._zkteco_get_users()
 
         for key, value in params.items():
@@ -231,19 +226,19 @@ class ZktecPro(Connector, Thread):
             magic_user_id = convert_to_device_id(
                 user_id_company=int(value["uid"]),
                 magic_number=self._magic_number)
-            
+
             for item in users:
                 if item.uid == magic_user_id:
                     exist_user = item
 
             # user not exist Create user
             if exist_user == 0:
-                self._zkteco_set_user(uid = int(magic_user_id),
-                                      name = value["name"],
-                                      privilege = value["privilege"],
-                                      password = value["password"],
-                                      group_id = value["group_id"],
-                                      card = int(value["card"]))
+                self._zkteco_set_user(uid=int(magic_user_id),
+                                      name=value["name"],
+                                      privilege=value["privilege"],
+                                      password=value["password"],
+                                      group_id=value["group_id"],
+                                      card=int(value["card"]))
             else:
                 # user is exist delete and create
                 # save finger print
@@ -256,12 +251,12 @@ class ZktecPro(Connector, Thread):
                         save_fingers.append(finger)
 
                 self._zkteco_delete_user(user_id=magic_user_id)
-                self._zkteco_set_user(uid = int(magic_user_id),
-                                      name = value["name"],
-                                      privilege = value["privilege"],
-                                      password = value["password"],
-                                      group_id = value["group_id"],
-                                      card = int(value["card"]))
+                self._zkteco_set_user(uid=int(magic_user_id),
+                                      name=value["name"],
+                                      privilege=value["privilege"],
+                                      password=value["password"],
+                                      group_id=value["group_id"],
+                                      card=int(value["card"]))
                 # add finger print
                 self._zkteco_save_user_template(magic_user_id, save_fingers)
 
@@ -310,7 +305,7 @@ class ZktecPro(Connector, Thread):
         lastdatetime = self.lastdatetime_text_file()
         # TODO: maso, 2023: check last time stamp
 
-        return item['ts'] > lastdatetime 
+        return item['ts'] > lastdatetime
 
     def _convert_attendance_to_telemetry(self, attendance, device_platform):
         tz = pytz.FixedOffset(int(self._timezone))
@@ -327,13 +322,13 @@ class ZktecPro(Connector, Thread):
         )
         attendance_date = datetime.fromtimestamp(
             datetime.timestamp(dateTimeUts))
-        
+
         _punch = "in"
         if device_platform == "ZMM220_TFT" and attendance.punch == 2:
             _punch = "out"
         elif device_platform == "ZEM600_TFT" and attendance.punch == 1:
             _punch = "out"
-        
+
         attendance_telemetry = {
             "ts": attendance_date.timestamp()*1000,
             "values": {
@@ -346,7 +341,7 @@ class ZktecPro(Connector, Thread):
                 "device_name": self.__deviceName
             }
         }
-        
+
         return attendance_telemetry
     # Main method of thread, must contain an infinite loop and all calls to data receiving/processing functions.
 
@@ -367,8 +362,12 @@ class ZktecPro(Connector, Thread):
             return False
 
     def _zkteco_close(self):
-        if self.connection:
-            self.connection.disconnect()
+        try:
+            if self.connection:
+                self.connection.disconnect()
+        except:
+            pass
+        finally:
             self.connection = None
 
     def _zkteco_connect(self):
@@ -498,7 +497,7 @@ class ZktecPro(Connector, Thread):
         sem.acquire()
         self._zkteco_connect()
         try:
-            self.connection.delete_user(uid = user_id)
+            self.connection.delete_user(uid=user_id)
         finally:
             self._zkteco_close()
             sem.release()
@@ -540,7 +539,7 @@ class ZktecPro(Connector, Thread):
             sem.release()
 
     def _zkteco_enroll_user(self, *args, **kwargs):
-        
+
         sem.acquire()
         self._zkteco_connect()
         try:
