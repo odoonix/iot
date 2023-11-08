@@ -116,6 +116,9 @@ class ZktecPro(Connector, Thread):
 
         log.info(f'magic number value is : {self._magic_number}')
 
+    def get_type(self):
+        return self.connector_type
+
     def get_config(self):
         return self.config
 
