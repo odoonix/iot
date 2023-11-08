@@ -3,7 +3,7 @@ import json
 import os
 from threading import Thread
 import traceback
-from thingsboard_gateway.connectors.connector import Connector, log
+from thingsboard_gateway.connectors.connector import Connector
 from thingsboard_gateway.gateway.constant_enums import DownlinkMessageType, Status
 from pathlib import Path
 from zk import ZK, const
@@ -19,6 +19,7 @@ import sys
 from schema import Schema, And, Use, Optional, SchemaError, Or
 from functools import reduce
 
+log = logging.getLogger("connector")
 
 sem = threading.Semaphore(1)
 
