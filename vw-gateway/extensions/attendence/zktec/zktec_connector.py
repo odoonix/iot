@@ -93,6 +93,7 @@ class ZktecPro(Connector, Thread):
         self.gateway = gateway  # Reference to TB Gateway
         self.connector_type = connector_type  # Use For Convertor
         self.config = config  # zktec.json Contents
+        self.__id = self.config.get('id')
 
         # Extract main sections from configuration ---------------------------------------------------------------------
         self.__device = config.get('device')
@@ -116,9 +117,16 @@ class ZktecPro(Connector, Thread):
 
         log.info(f'magic number value is : {self._magic_number}')
 
+
     def get_type(self):
         return self.connector_type
+    
+    def get_id(self):
+        return self.__id
 
+    def is_stopped(self):
+        return not self.is_connected()
+        
     def get_config(self):
         return self.config
 
