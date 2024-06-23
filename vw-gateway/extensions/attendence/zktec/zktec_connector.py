@@ -568,7 +568,7 @@ class ZktecPro(Connector, Thread):
         self.gateway.send_rpc_reply(*args, **kwargs)
 
     def _send_to_storage(self, result_dict):
-        if self.gateway.send_to_storage(self.get_name(), result_dict) == Status.SUCCESS:
+        if self.gateway.send_to_storage(self.get_name(), self.get_id(),result_dict) == Status.SUCCESS:
             init_value = {
                 'ts': 0
             }
