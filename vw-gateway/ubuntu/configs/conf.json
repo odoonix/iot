@@ -20,7 +20,7 @@
     "handleDeviceRenaming": true,
     "security": {
       "type": "accessToken",
-      "accessToken": "Tdb0zIAQjE2fYwvTndWF"
+      "accessToken": "AvsLeLsVxYYETzqgMZCj"
     },
     "qos": 1,
     "checkingDeviceActivity": {
@@ -55,8 +55,8 @@
   },
   "connectors": [{
     "name": "ZKTec Factory ",
-    "type": "attendence\\zktec" ,
-    "configuration": "json_files\\zktec.json",
+    "type": "attendence/zktec" ,
+    "configuration": "json_files/zktec.json",
     "class": "ZktecPro"
   }]
 }

@@ -1,10 +1,10 @@
 {
-  "deviceName": "ZKTec2679810524082",
+  "deviceName": "ZKTec26798105240829",
   "deviceType": "Attendance",
   "storage": ".",
   "device": {
-    "name": "Shiraz Startup Factory ZKTec Device",
-    "ip": "192.168.88.223",
+    "name": "ZKTec Device (MASO)",
+    "ip": "192.168.88.224",
     "port": "4370",
     "password": "8984",
     "timezone": "210",

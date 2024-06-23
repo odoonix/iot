@@ -1,26 +1,32 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "TB Gateway",
-            "type": "python",
-            "request": "launch",
-            "program": "C:\\odoo-iot\\vw-gateway\\main.py ",
-            "console": "integratedTerminal",
-            "justMyCode": false,
-            "args": ["--config","C:\\odoo-iot\\vw-gateway\\ubuntu\\configs\\conf.json", "--extension","C:\\odoo-iot\\vw-gateway\\extensions"],
-            "cwd": "C:\\odoo-iot\\vw-gateway"
-        },{
-            "name": "Test",
-            "type": "python",
-            "request": "launch",
-            "program": "/home/sanaz/viraweb123/odoo-iot/vw-gateway/tests",
-            "console": "integratedTerminal",
-            "justMyCode": false,
-            "cwd": "/home/sanaz/viraweb123/odoo-iot/vw-gateway"
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "TB Gateway",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/odoo-iot/vw-gateway/main.py ",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "args": [
+        "--config",
+        "${workspaceFolder}/odoo-iot/vw-gateway/ubuntu/configs/conf.json",
+        "--extension",
+        "${workspaceFolder}/odoo-iot/vw-gateway/extensions"
+      ],
+      "cwd": "${workspaceFolder}/odoo-iot/vw-gateway"
+    },
+    {
+      "name": "TB Gateway Test",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "/home/sanaz/viraweb123/odoo-iot/vw-gateway/tests",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "/home/sanaz/viraweb123/odoo-iot/vw-gateway"
+    }
+  ]
 }
