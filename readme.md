@@ -68,7 +68,7 @@ ${VW_HOME: /root}
 - Install pre-requirenemnt based on your os
 - install package dependencies
 	```
-	cd ~/git/odoo-iot/vw-gateway
+	cd ~/git/iot/vw-gateway
 	python3 -m pip install -r requirements.txt
 	cd ~
 	```
@@ -136,9 +136,10 @@ ${VW_HOME: /root}
 - copy a template configuration
 
 ```
-	cp ~/git/odoo-iot/ubuntu/configs/* ~/.vw-gateway/ -fR
+	cp ~/git/iot/vw-gateway/ubuntu/configs/* ~/.vw-gateway/ -fR
 	cd ~/.vw-gateway
-	vi conf.yaml
+	nano conf.json
+	nano json_files/zktec.json
 ```
 	
 then update all device configuration
@@ -178,6 +179,8 @@ EOF
 - systemctl daemon-reload
 
 - systemctl restart vw-gateway 
+
+- systemctl enable vw-gateway
 
 - Create logs Folder in WorkingDirectory
 
