@@ -155,9 +155,9 @@ then update all device configuration
 
 ## Create service for Ubuntu server 22.04 LTS
 
-- Add WorkingDirectory in vw-gateway and Change ExecStart in service
+Add WorkingDirectory in vw-gateway and Change ExecStart in service
 
-For example
+For Example
 
 Change according to the address of the Python file
 ```
