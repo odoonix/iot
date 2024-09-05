@@ -59,7 +59,7 @@ ${VW_HOME: /root}
 - clone the following project into the git directory.
 	```
 	cd ~/git
-	git clone https://github.com/odoonix/iot.git --branch m3.5.1
+	git clone https://github.com/odoonix/iot.git --branch 3.5.1
 	cd ..
 	```
 
