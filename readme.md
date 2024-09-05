@@ -153,11 +153,11 @@ then update all device configuration
 	systemctl start vw-gateway
 ```
 
--install schema
+## Create service for Ubuntu server 22.04 LTS
 
--add WorkingDirectory in vw-gateway and Chang ExecStart in service
+- Add WorkingDirectory in vw-gateway and Change ExecStart in service
 
-for example
+For example
 
 Change according to the address of the Python file
 ```
@@ -175,11 +175,11 @@ WantedBy=multi-user.target
 EOF
 ```
 
--systemctl daemon-reload
+- systemctl daemon-reload
 
--systemctl restart vw-gateway 
+- systemctl restart vw-gateway 
 
--Create logs Folder in WorkingDirectory
+- Create logs Folder in WorkingDirectory
 
--Create logs.conf file
+- Create logs.conf file
 
