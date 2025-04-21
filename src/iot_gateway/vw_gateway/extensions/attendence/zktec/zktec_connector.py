@@ -104,7 +104,7 @@ class ZktecPro(Connector, Thread):
         self._password = self.__device.get('password', "1")
         self._timezone = self.__device.get('timezone', "210")
         self._magic_number = int(self.__device.get('magic_number', "0"))
-
+        # self.stopped = False
         # Set up lifecycle flags ---------------------------------------------------------------------------------------
         self.connection = False  # Service variable for check connection to device
         self.__logger = logging.getLogger("zkteck-"+self._ip)
