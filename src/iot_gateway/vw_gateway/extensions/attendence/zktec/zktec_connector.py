@@ -162,8 +162,7 @@ class ZktecPro(Connector, Thread):
         attendances = self._zkteco_get_attendance()
         for attendance in attendances:
             if is_device_id(self._magic_number, attendance.user_id):
-                item = self._convert_attendance_to_telemetry(
-                    attendance, device_platform)
+                item = self._convert_attendance_to_telemetry(attendance, device_platform)
 
                 if self._should_send_attendance(item):
                     result_dict['telemetry'].append(item)
@@ -568,7 +567,7 @@ class ZktecPro(Connector, Thread):
         self.gateway.send_rpc_reply(*args, **kwargs)
 
     def _send_to_storage(self, result_dict):
-        if self.gateway.send_to_storage(self.get_name(), self.get_id(),result_dict) == Status.SUCCESS:
+        if self.gateway.send_to_storage(self.get_name(), self.get_id(), result_dict) == Status.SUCCESS:
             init_value = {
                 'ts': 0
             }

@@ -1,6 +1,6 @@
 {
   "thingsboard": {
-    "host": "iot3.yuccasoft.com",
+    "host": "185.141.171.36",
     "port": 1883,
     "remoteShell": true,
     "remoteConfiguration": false,
@@ -20,7 +20,7 @@
     "handleDeviceRenaming": true,
     "security": {
       "type": "accessToken",
-      "accessToken": "AvsLeLsVxYYETzqgMZCj"
+      "accessToken": "G65Yz2176BfU0apZZhJX"
     },
     "qos": 1,
     "checkingDeviceActivity": {
