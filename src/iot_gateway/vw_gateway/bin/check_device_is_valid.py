@@ -1,5 +1,6 @@
 from zk import ZK, const
 import sys
+import signal
 import logging
 
 

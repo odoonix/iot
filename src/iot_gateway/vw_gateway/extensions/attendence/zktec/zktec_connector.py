@@ -104,13 +104,14 @@ class ZktecPro(Connector, Thread):
         self._password = self.__device.get('password', "1")
         self._timezone = self.__device.get('timezone', "210")
         self._magic_number = int(self.__device.get('magic_number', "0"))
-        # self.stopped = False
+
         # Set up lifecycle flags ---------------------------------------------------------------------------------------
         self.connection = False  # Service variable for check connection to device
         self.__logger = logging.getLogger("zkteck-"+self._ip)
         self.__deviceName = config.get('deviceName', 'deviceName')
         self.__deviceType = config.get('deviceType', 'default')
-
+        self.stopped = False 
+        self.daemon = True 
         # Create device
         self.gateway.add_device(self.__deviceName, {"connector": self},
                                 device_type=self.__deviceType)
@@ -137,7 +138,7 @@ class ZktecPro(Connector, Thread):
         return self._is_zkteco_connected()
 
     def run(self):
-        while (True):
+        while not self.stopped:
             try:
                 self._run()
             except Exception as ex:
@@ -176,9 +177,21 @@ class ZktecPro(Connector, Thread):
         self.stopped = False
         self.start()
 
+
     def close(self):
-        self._zkteco_close()
-        # TODO: maso, 2023: check if we have to stop main thread too
+    
+        log.info(f"Closing ZKTeco connector for device {self.__deviceName}")
+        self.stopped = True  
+        try:
+            self._zkteco_close()
+        except Exception as e:
+            log.error(f"Error closing ZKTeco connection: {e}")
+       
+        if self.is_alive():
+            self.join(timeout=2.0)  
+            if self.is_alive():
+                log.warning(f"ZKTeco connector thread {self.__deviceName} did not stop in time")
+        log.info(f"ZKTeco connector {self.__deviceName} closed successfully")
 
     def on_attributes_update(self, content):
         # TODO: maso, 2023: I do not know what is it for?
@@ -372,12 +385,15 @@ class ZktecPro(Connector, Thread):
         else:
             return False
 
+
     def _zkteco_close(self):
+      
         try:
-            if self.connection:
+            if self.connection is not None:
                 self.connection.disconnect()
-        except:
-            pass
+                log.debug(f"ZKTeco connection for {self.__deviceName} disconnected")
+        except Exception as e:
+            log.error(f"Error disconnecting ZKTeco device {self.__deviceName}: {e}")
         finally:
             self.connection = None
 
