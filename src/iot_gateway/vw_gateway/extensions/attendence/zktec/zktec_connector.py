@@ -115,6 +115,9 @@ class ZktecPro(Connector, Thread):
         # Create device
         self.gateway.add_device(self.__deviceName, {"connector": self},
                                 device_type=self.__deviceType)
+        
+        self._keep_alive_thread = Thread(target=self._send_keep_alive, daemon=True)
+        self._keep_alive_thread.start()
 
         log.info(f'magic number value is : {self._magic_number}')
 
@@ -574,6 +577,38 @@ class ZktecPro(Connector, Thread):
         finally:
             self._zkteco_close()
             sem.release()
+
+    def _send_keep_alive(self):
+        KEEP_ALIVE_INTERVAL = 300
+        while not self.stopped:
+            try:
+                keep_alive_data = {
+                    "deviceName": self.__deviceName,
+                    "deviceType": self.__deviceType,
+                    "attributes": [
+                        {"status": "active"}
+                    ],
+                    "telemetry": [
+                        {
+                            "ts": int(time.time() * 1000), 
+                            "values": {
+                                "keep_alive": True,
+                                "device_name": self.__deviceName
+                            }
+                        }
+                    ]
+                }
+                if self._send_to_storage(keep_alive_data):
+                    self.__logger.info(f"Sent keep-alive message for device {self.__deviceName}")
+                else:
+                    self.__logger.warning(f"Failed to send keep-alive message for device {self.__deviceName}")
+            except Exception as e:
+                self.__logger.error(f"Error sending keep-alive message: {e}")
+            for _ in range(int(KEEP_ALIVE_INTERVAL / 10)):
+                if self.stopped:
+                    break
+                time.sleep(10)       
+            
 
     ##############################################################################################
     #                                 Gateway util
