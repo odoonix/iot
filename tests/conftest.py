@@ -1,5 +1,5 @@
 """
-    Dummy conftest.py for iot_gateway.
+    Dummy conftest.py for tb_gateway.
 
     If you don't know what this is for, just leave it empty.
     Read more about conftest.py under:

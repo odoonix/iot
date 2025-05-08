@@ -1,8 +1,8 @@
 ===========
-iot-gateway
+tb-gateway
 ===========
 
-This is the documentation of **iot-gateway**.
+This is the documentation of **tb-gateway**.
 
 .. note::
 

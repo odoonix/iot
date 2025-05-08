@@ -1,7 +1,7 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-source = iot_gateway
+source = tb_gateway
 # omit = bad_file.py
 
 [paths]

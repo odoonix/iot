@@ -14,11 +14,11 @@
       "justMyCode": false,
       "args": [
         "--config",
-        "${workspaceFolder}/src/iot_gateway/vw_gateway/ubuntu/configs/conf.json",
+        "${workspaceFolder}/src/tb_gateway/vw_gateway/ubuntu/configs/conf.json",
         "--extension",
-        "${workspaceFolder}/src/iot_gateway/vw_gateway/extensions"
+        "${workspaceFolder}/src/tb_gateway/vw_gateway/extensions"
       ],
-      "cwd": "${workspaceFolder}/src/iot_gateway/vw_gateway"
+      "cwd": "${workspaceFolder}/src/tb_gateway/vw_gateway"
     },
     {
       "name": "TB Gateway Test",

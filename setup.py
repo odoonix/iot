@@ -1,5 +1,5 @@
 """
-    Setup file for iot-gateway.
+    Setup file for tb-gateway.
     Use setup.cfg to configure your project.
 
     This file was generated with PyScaffold 4.6.

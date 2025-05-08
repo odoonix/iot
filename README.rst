@@ -1,27 +1,27 @@
 .. These are examples of badges you might want to add to your README:
    please update the URLs accordingly
 
-    .. image:: https://api.cirrus-ci.com/github/<USER>/iot-gateway.svg?branch=main
+    .. image:: https://api.cirrus-ci.com/github/<USER>/tb-gateway.svg?branch=main
         :alt: Built Status
-        :target: https://cirrus-ci.com/github/<USER>/iot-gateway
-    .. image:: https://readthedocs.org/projects/iot-gateway/badge/?version=latest
+        :target: https://cirrus-ci.com/github/<USER>/tb-gateway
+    .. image:: https://readthedocs.org/projects/tb-gateway/badge/?version=latest
         :alt: ReadTheDocs
-        :target: https://iot-gateway.readthedocs.io/en/stable/
-    .. image:: https://img.shields.io/coveralls/github/<USER>/iot-gateway/main.svg
+        :target: https://tb-gateway.readthedocs.io/en/stable/
+    .. image:: https://img.shields.io/coveralls/github/<USER>/tb-gateway/main.svg
         :alt: Coveralls
-        :target: https://coveralls.io/r/<USER>/iot-gateway
-    .. image:: https://img.shields.io/pypi/v/iot-gateway.svg
+        :target: https://coveralls.io/r/<USER>/tb-gateway
+    .. image:: https://img.shields.io/pypi/v/tb-gateway.svg
         :alt: PyPI-Server
-        :target: https://pypi.org/project/iot-gateway/
-    .. image:: https://img.shields.io/conda/vn/conda-forge/iot-gateway.svg
+        :target: https://pypi.org/project/tb-gateway/
+    .. image:: https://img.shields.io/conda/vn/conda-forge/tb-gateway.svg
         :alt: Conda-Forge
-        :target: https://anaconda.org/conda-forge/iot-gateway
-    .. image:: https://pepy.tech/badge/iot-gateway/month
+        :target: https://anaconda.org/conda-forge/tb-gateway
+    .. image:: https://pepy.tech/badge/tb-gateway/month
         :alt: Monthly Downloads
-        :target: https://pepy.tech/project/iot-gateway
+        :target: https://pepy.tech/project/tb-gateway
     .. image:: https://img.shields.io/twitter/url/http/shields.io.svg?style=social&label=Twitter
         :alt: Twitter
-        :target: https://twitter.com/iot-gateway
+        :target: https://twitter.com/tb-gateway
 
 .. image:: https://img.shields.io/badge/-PyScaffold-005CA0?logo=pyscaffold
     :alt: Project generated with PyScaffold
@@ -30,7 +30,7 @@
 |
 
 ===========
-iot-gateway
+tb-gateway
 ===========
 
 
