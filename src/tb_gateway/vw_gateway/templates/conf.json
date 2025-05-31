@@ -56,7 +56,7 @@
   "connectors": [{
     "name": "ZKTec Factory ",
     "type": "attendence/zktec" ,
-    "configuration": "json_files/zktec.json",
+    "configuration": "devices/zktec.json",
     "class": "ZktecPro"
   }]
 }
