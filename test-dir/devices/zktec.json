@@ -1,0 +1,19 @@
+{
+  "deviceName": "Test ZKTECKO",
+  "deviceType": "Attendance",
+  "storage": ".",
+  "device": {
+    "name": "ZKTec Device (MASO)",
+    "ip": "192.168.10.6",
+    "port": "4370",
+    "password": "11",
+    "timezone": "210",
+    "magic_number": 0,
+    "configuration": {
+      "someNestedObject": {
+        "key": "value"
+      }
+    }
+  },
+  "id": "4c0d7643-d90f-4906-aa92-31cb61b332c0"
+}
