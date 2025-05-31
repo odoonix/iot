@@ -52,22 +52,34 @@ def main(path_cofig: str, path_extension: str):
     signal.pause()
 
 
+TEMPLATE_FILES = [
+    "conf.json",
+    "logs.json",
+    "statistics.json",
+    "devices/cups.json",
+    "devices/zktec.json",
+]
+
 @app.command()
 def init():
     output_dir = Path.cwd()
-
     files_root = resources.files(templates)
 
-    for item in files_root.rglob('*'):
-        if item.is_file():
-            with resources.as_file(item) as real_item:
-                relative_path = item.relative_to(files_root)
-                destination = output_dir / relative_path
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy(real_item, destination)
-                typer.echo(f"✅ Copied: {relative_path}")
+    for relative_path_str in TEMPLATE_FILES:
+        relative_path = Path(relative_path_str)
+        file_in_package = files_root / relative_path
 
-    typer.echo("🎉 All template files copied successfully.")
+        if not file_in_package.is_file():
+            typer.echo(f"Skipping: {relative_path} (not a file)")
+            continue
+
+        with resources.as_file(file_in_package) as real_file:
+            destination = output_dir / relative_path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(real_file, destination)
+            typer.echo(f"Copied: {relative_path}")
+
+    typer.echo("Selected template files copied successfully.")
 
 
 if __name__ == "__main__":
