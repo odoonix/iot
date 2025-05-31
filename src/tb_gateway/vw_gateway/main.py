@@ -55,13 +55,16 @@ def main(path_cofig: str, path_extension: str):
 @app.command()
 def init():
     output_dir = Path.cwd()
-    with resources.as_file(resources.files(templates)) as template_path:
-        for item in template_path.rglob('*'):
-            if item.is_file():
-                relative_path = item.relative_to(template_path)
+
+    files_root = resources.files(templates)
+
+    for item in files_root.rglob('*'):
+        if item.is_file():
+            with resources.as_file(item) as real_item:
+                relative_path = item.relative_to(files_root)
                 destination = output_dir / relative_path
                 destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy(item, destination)
+                shutil.copy(real_item, destination)
                 typer.echo(f"✅ Copied: {relative_path}")
 
     typer.echo("🎉 All template files copied successfully.")
