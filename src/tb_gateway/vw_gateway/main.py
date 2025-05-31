@@ -8,7 +8,10 @@ import typer
 import signal
 import sys
 import logging
-
+import shutil
+from pathlib import Path
+import importlib.resources as resources
+import tb_gateway.vw_gateway.templates as templates
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -51,9 +54,17 @@ def main(path_cofig: str, path_extension: str):
 
 @app.command()
 def init():
-    pass
+    output_dir = Path.cwd()
+    with resources.as_file(resources.files(templates)) as template_path:
+        for item in template_path.rglob('*'):
+            if item.is_file():
+                relative_path = item.relative_to(template_path)
+                destination = output_dir / relative_path
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(item, destination)
+                typer.echo(f"✅ Copied: {relative_path}")
+
+    typer.echo("🎉 All template files copied successfully.")
+    
 
 
-
-if __name__ == "__main__":
-    app()

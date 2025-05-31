@@ -28,6 +28,18 @@
       "console": "integratedTerminal",
       "justMyCode": false,
       "cwd": "/home/sanaz/viraweb123/odoo-iot/vw_gateway"
+    },
+    {
+      "name": "TB Gateway: init",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/tb_gateway/vw_gateway/main.py",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "/home/esmaeil/project_other/iot_new/iot/test-dir",
+      "args": [
+        "init"
+      ]
     }
   ]
 }
