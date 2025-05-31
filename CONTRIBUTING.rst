@@ -301,7 +301,6 @@ on PyPI_, the following steps can be used to release a new version for
    uploaded to PyPI_ correctly.
 
 
-
 .. [#contrib1] Even though, these resources focus on open source projects and
    communities, the general ideas behind collaborating with other developers
    to collectively create software are general and can be applied to all sorts

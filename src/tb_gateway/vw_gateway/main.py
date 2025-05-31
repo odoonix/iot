@@ -1,4 +1,7 @@
 #!/usr/bin/python3
+import os
+
+
 from thingsboard_gateway.gateway.tb_gateway_service import TBGatewayService
 from thingsboard_gateway.tb_utility.tb_loader import TBModuleLoader
 import os.path
@@ -40,12 +43,17 @@ def signal_handler(sig, frame):
 
 
 @app.command()
-def main(path_cofig: str, path_extension: str):
+def main(path_cofig: str):
     f = Figlet(font='big')
     print(f.renderText('Odoonix'))
     print("Thingsboard Gateway Package Version is: " +
           pkg_resources.get_distribution("thingsboard-gateway").version)
-    TBModuleLoader.PATHS.append(path_extension)
+
+    current_file_path = os.path.abspath(__file__)
+    current_folder = os.path.dirname(current_file_path)
+    TBModuleLoader.PATHS.append(
+        os.path.join(current_folder, "extensions")
+    )
     global gateway
     gateway = TBGatewayService(path_cofig)
 
@@ -59,6 +67,7 @@ TEMPLATE_FILES = [
     "devices/cups.json",
     "devices/zktec.json",
 ]
+
 
 @app.command()
 def init():
