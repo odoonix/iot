@@ -36,7 +36,7 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 
-signal.signal(signal.SIGINT, signal_handler)
+# signal.signal(signal.SIGINT, signal_handler)
 
 
 @app.command()
@@ -65,6 +65,7 @@ def init():
                 typer.echo(f"✅ Copied: {relative_path}")
 
     typer.echo("🎉 All template files copied successfully.")
-    
 
 
+if __name__ == "__main__":
+    app()
