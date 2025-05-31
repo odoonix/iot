@@ -18,12 +18,13 @@ app = typer.Typer()
 
 gateway = None
 
+
 def signal_handler(sig, frame):
     log.info("Received SIGINT, stopping the gateway...")
     global gateway
     if gateway is not None:
         try:
-            gateway.stop()  
+            gateway.stop()
             log.info("Gateway stopped successfully.")
         except Exception as e:
             log.error(f"Error stopping gateway: {e}")
@@ -34,16 +35,25 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+
 @app.command()
 def main(path_cofig: str, path_extension: str):
     f = Figlet(font='big')
     print(f.renderText('Odoonix'))
-    print("Thingsboard Gateway Package Version is: " + pkg_resources.get_distribution("thingsboard-gateway").version)
+    print("Thingsboard Gateway Package Version is: " +
+          pkg_resources.get_distribution("thingsboard-gateway").version)
     TBModuleLoader.PATHS.append(path_extension)
     global gateway
     gateway = TBGatewayService(path_cofig)
- 
-    signal.pause()  
+
+    signal.pause()
+
+
+@app.command()
+def init():
+    pass
+
+
 
 if __name__ == "__main__":
     app()
