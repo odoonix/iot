@@ -110,27 +110,27 @@ class ZktecPro(Connector, Thread):
         self.__logger = logging.getLogger("zkteck-"+self._ip)
         self.__deviceName = config.get('deviceName', 'deviceName')
         self.__deviceType = config.get('deviceType', 'default')
-        self.stopped = False 
-        self.daemon = True 
+        self.stopped = False
+        self.daemon = True
         # Create device
         self.gateway.add_device(self.__deviceName, {"connector": self},
                                 device_type=self.__deviceType)
-        
-        self._keep_alive_thread = Thread(target=self._send_keep_alive, daemon=True)
+
+        self._keep_alive_thread = Thread(
+            target=self._send_keep_alive, daemon=True)
         self._keep_alive_thread.start()
 
         log.info(f'magic number value is : {self._magic_number}')
 
-
     def get_type(self):
         return self.connector_type
-    
+
     def get_id(self):
         return self.__id
 
     def is_stopped(self):
         return not self.is_connected()
-        
+
     def get_config(self):
         return self.config
 
@@ -166,7 +166,8 @@ class ZktecPro(Connector, Thread):
         attendances = self._zkteco_get_attendance()
         for attendance in attendances:
             if is_device_id(self._magic_number, attendance.user_id):
-                item = self._convert_attendance_to_telemetry(attendance, device_platform)
+                item = self._convert_attendance_to_telemetry(
+                    attendance, device_platform)
 
                 if self._should_send_attendance(item):
                     result_dict['telemetry'].append(item)
@@ -180,20 +181,20 @@ class ZktecPro(Connector, Thread):
         self.stopped = False
         self.start()
 
-
     def close(self):
-    
+
         log.info(f"Closing ZKTeco connector for device {self.__deviceName}")
-        self.stopped = True  
+        self.stopped = True
         try:
             self._zkteco_close()
         except Exception as e:
             log.error(f"Error closing ZKTeco connection: {e}")
-       
+
         if self.is_alive():
-            self.join(timeout=2.0)  
+            self.join(timeout=2.0)
             if self.is_alive():
-                log.warning(f"ZKTeco connector thread {self.__deviceName} did not stop in time")
+                log.warning(
+                    f"ZKTeco connector thread {self.__deviceName} did not stop in time")
         log.info(f"ZKTeco connector {self.__deviceName} closed successfully")
 
     def on_attributes_update(self, content):
@@ -331,24 +332,19 @@ class ZktecPro(Connector, Thread):
     def _should_send_attendance(self, item):
         lastdatetime = self.lastdatetime_text_file()
         # TODO: maso, 2023: check last time stamp
-
-        return item['ts'] > lastdatetime
+        timestamp = item['values'].get('timestamp', '2000-01-01 00:00:00')
+        return timestamp > lastdatetime
 
     def _convert_attendance_to_telemetry(self, attendance, device_platform):
-        tz = pytz.FixedOffset(int(self._timezone))
 
-        datetimeOrg = attendance.timestamp
-        dateTimeUts = datetime(
-            datetimeOrg.year,
-            datetimeOrg.month,
-            datetimeOrg.day,
-            datetimeOrg.hour,
-            datetimeOrg.minute,
-            datetimeOrg.second,
-            tzinfo=tz
-        )
-        attendance_date = datetime.fromtimestamp(
-            datetime.timestamp(dateTimeUts))
+        #
+        # Convert device Naive datetime to Aware datetime
+        #
+        # NOTE: datetime from the device is formed as a Naive datetime
+        # but in the local timezone
+        tz = pytz.FixedOffset(int(self._timezone))
+        attendance_date = (attendance.timestamp.replace(
+            tzinfo=tz).astimezone(pytz.utc).replace(tzinfo=None))
 
         _punch = "in"
         if device_platform == "ZMM220_TFT" and attendance.punch == 2:
@@ -357,7 +353,7 @@ class ZktecPro(Connector, Thread):
             _punch = "out"
 
         attendance_telemetry = {
-            "ts": attendance_date.timestamp()*1000,
+            "ts": int(attendance_date.timestamp())*1000,
             "values": {
                 "user_id": convert_to_company_id(
                     magic_number=self._magic_number,
@@ -388,15 +384,16 @@ class ZktecPro(Connector, Thread):
         else:
             return False
 
-
     def _zkteco_close(self):
-      
+
         try:
             if self.connection is not None:
                 self.connection.disconnect()
-                log.debug(f"ZKTeco connection for {self.__deviceName} disconnected")
+                log.debug(
+                    f"ZKTeco connection for {self.__deviceName} disconnected")
         except Exception as e:
-            log.error(f"Error disconnecting ZKTeco device {self.__deviceName}: {e}")
+            log.error(
+                f"Error disconnecting ZKTeco device {self.__deviceName}: {e}")
         finally:
             self.connection = None
 
@@ -590,7 +587,7 @@ class ZktecPro(Connector, Thread):
                     ],
                     "telemetry": [
                         {
-                            "ts": int(time.time() * 1000), 
+                            "ts": int(time.time() * 1000),
                             "values": {
                                 "keep_alive": True,
                                 "device_name": self.__deviceName
@@ -599,16 +596,17 @@ class ZktecPro(Connector, Thread):
                     ]
                 }
                 if self._send_to_storage(keep_alive_data):
-                    self.__logger.info(f"Sent keep-alive message for device {self.__deviceName}")
+                    self.__logger.info(
+                        f"Sent keep-alive message for device {self.__deviceName}")
                 else:
-                    self.__logger.warning(f"Failed to send keep-alive message for device {self.__deviceName}")
+                    self.__logger.warning(
+                        f"Failed to send keep-alive message for device {self.__deviceName}")
             except Exception as e:
                 self.__logger.error(f"Error sending keep-alive message: {e}")
             for _ in range(int(KEEP_ALIVE_INTERVAL / 10)):
                 if self.stopped:
                     break
-                time.sleep(10)       
-            
+                time.sleep(10)
 
     ##############################################################################################
     #                                 Gateway util
@@ -619,12 +617,9 @@ class ZktecPro(Connector, Thread):
 
     def _send_to_storage(self, result_dict):
         if self.gateway.send_to_storage(self.get_name(), self.get_id(), result_dict) == Status.SUCCESS:
-            init_value = {
-                'ts': 0
-            }
-            latest = reduce(
-                lambda x, y: x if x['ts'] > y['ts'] else y, result_dict['telemetry'], init_value)
-            if latest['ts'] == 0:
+            timestamps = [item['values']['timestamp']
+                          for item in result_dict['telemetry'] if item['values'].get('timestamp', False)]
+            if not timestamps:
                 return True
             path = self.get_storage_path()
             if not os.path.exists(os.path.dirname(path.absolute())):
@@ -633,7 +628,7 @@ class ZktecPro(Connector, Thread):
                 except OSError as exc:  # Guard against race condition
                     raise
             with open(path, 'w') as f:
-                f.write(str(latest['ts']))
+                f.write(max(timestamps))
             return True
         return False
 
@@ -642,6 +637,6 @@ class ZktecPro(Connector, Thread):
         try:
             with open(self.get_storage_path(), 'r') as f:
                 lines = f.readlines()
-                return float(lines[0])
+                return lines[0]
         except:
             return 0
